@@ -768,7 +768,7 @@ C같은 언어에서는 문자열은 char 타입의 배열입니다. char타입�
 
 그럼에도 러스트에서 슬라이스와 함께 문자열을 설명하는 경우가 많은데 그 이유를 알아보겠습니다.
 
-우선 String(https://doc.rust-lang.org/std/string/struct.String.html)이라는 타입에 대해서 알아보겠습니다.
+우선 String(https://doc.rust-lang.org/std/string/struct.String.html) 이라는 타입에 대해서 알아보겠습니다.
 
 메뉴얼을 자세히 볼 필요는 없지만 첫줄만 봐도 결국 하나의 구조체라는 것을 알 수 있습니다. C에서와같이 문자의 배열은 아닙니다. 따라서 String을 사용하기 위해서는 우선 String타입의 객체를 생성해야합니다. 다음 짧은 예제에는 몇가지 흔하게 사용되는 String 생성 방법들을 모아봤습니다. 참고로 String은 러스트의 “The Rust Standard  Library”(약자로 std)에 포함되기 때문에 명시적으로 지정해주지않아도 자동으로 빌드에 포함됩니다. C의 include나 파이썬의 import등과 같은 추가적인 절차없이 바로 사용할 수 있습니다. 
 
