@@ -7,7 +7,7 @@
 저는 러스트로 프로그래밍을 할 때 가장 많이 사용하는 라이브러리가 벡터(Vector) 타입이었습니다. 말 그대로 같은 타입의 데이터들을 배열같이 저장하는 것인데, 크기에 제한이 없고 접근이 빠른 등 사용하기 편리하고, 다양한 메소드들을 지원하고 있어서 데이터를 저장할 때 가장 많이 사용하는 타입입니다.
 
 >
-> 참고로 문자열을 나타내는 String도 사실은 u8타입 데이터를 벡터에 저장한 것입니다. (https://doc.rust-lang.org/src/alloc/string.rs.html#365) 어떤 타입이나 트레이트가 실제로 어떻게 정의되어있는지 알면 좀더 사용하기 편리합니다. 온라인 매뉴얼을 통해 쉽게 확인해볼 수 있는 방법이 있습니다. String타입의 매뉴얼 https://doc.rust-lang.org/std/vec/struct.Vec.html 을 열어보시면 페이지 오른쪽 위에 소스를 볼 수 있는 링크 source가 있습니다. 만약 메뉴얼에서 특정 메소드의 코드를 보고 싶다면 매뉴얼에서 해당 메소드에 대한 설명에서 source링크를 누르면 소스 페이지로 넘어갑니다.
+> 참고로 문자열을 나타내는 String도 사실은 u8타입 데이터를 벡터에 저장한 것입니다. (<https://doc.rust-lang.org/src/alloc/string.rs.html#365>) 어떤 타입이나 트레이트가 실제로 어떻게 정의되어있는지 알면 좀더 사용하기 편리합니다. 온라인 매뉴얼을 통해 쉽게 확인해볼 수 있는 방법이 있습니다. String타입의 매뉴얼 <https://doc.rust-lang.org/std/vec/struct.Vec.html> 을 열어보시면 페이지 오른쪽 위에 소스를 볼 수 있는 링크 source가 있습니다. 만약 메뉴얼에서 특정 메소드의 코드를 보고 싶다면 매뉴얼에서 해당 메소드에 대한 설명에서 source링크를 누르면 소스 페이지로 넘어갑니다.
 >
 
 벡터는 사실 거의 모든 언어마다 다 있는 것이니 굳이 길게 설명하지않고 러스트에서 자주 사용하는 패턴을 이용한 예제를 보겠습니다.
@@ -74,6 +74,7 @@ fn main() {
     println!("{}", collect);
 }
 ```
+
 ```bash
 $ cargo run --bin std_library_vec
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.25s
@@ -149,7 +150,7 @@ fn find_rust<'a>(books: &'a [Book]) -> Vec<&'a Book> {
 - 예제 코드에서 책 제목이 아니라 저자 이름을 찾는 함수를 만들어보세요.
 - 예제 코드에서 책 출판 날짜를 나타내는 published 필드의 타입을 문자열로 바꿔보세요.
 - 예제 코드를 실행하면 마지막에 불필요한 빈 줄이 출력됩니다. 이 빈 줄을 출력되지 않도록 바꿔보세요.
-- https://doc.rust-lang.org/std/vec/struct.Vec.html#guarantees 벡터의 내부 구조에 대해서 더 자세히 이해하고싶다면 이 문서를 참고하세요.
+- <https://doc.rust-lang.org/std/vec/struct.Vec.html#guarantees> 벡터의 내부 구조에 대해서 더 자세히 이해하고싶다면 이 문서를 참고하세요.
 
 ## 해쉬맵 std::collections::HashMap
 
@@ -197,6 +198,7 @@ fn main() {
     println!("{:?}", not_found);
 }
 ```
+
 ```bash
 $ cargo run --bin std_library_hashmap_simple
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.25s
@@ -205,7 +207,7 @@ Some(Book { title: "The another book", author: "Unknown", published: 20111111 })
 None
 ```
 
-library변수를 해쉬맵 타입으로 만들어서 책을 저장하고 있습니다. 키는 문자열로된 ISBN값이고 값은 Book 타입의 객체입니다. 해쉬맵에 데이터를 저장하기위해서 insert 메소드를 사용하고 키에 해당하는 데이터를 얻기 위해서 get 메소드를 사용합니다. 
+library변수를 해쉬맵 타입으로 만들어서 책을 저장하고 있습니다. 키는 문자열로된 ISBN값이고 값은 Book 타입의 객체입니다. 해쉬맵에 데이터를 저장하기위해서 insert 메소드를 사용하고 키에 해당하는 데이터를 얻기 위해서 get 메소드를 사용합니다.
 해쉬맵 자체적으로 데이터 검색 기능이 있으니 이전 예제에서 만들었던 find_rust함수가 필요없습니다.
 
 주의해야 할 것은 insert 메소드에 값을 저장할 때 객체의 값을 전달한다는 것입니다. 만약 the_book 객체를 library에 저장한 후에는 the_book 객체에 대한 소유권이 library로 이동합니다. 따라서 the_book이라는 변수를 다시는 사용할 수 없습니다. 그리고 하나 더 주의할 것이 있는데 insert 메소드는 이미 키가 존재할 경우 데이터를 덮어쓴다는 것입니다. 그러니 실제 제품 개발에서는 항상 데이터가 있는지를 먼저 확인하는게 필요합니다. 데이터가 있는지 확인하는 방법은 연습문제로 남겨놓았습니다.
@@ -258,7 +260,7 @@ fn main() {
 }
 ```
 
-이전 예제와 반대로 책의 정보를 가지고 ISBN값을 찾는 예제입니다. 이 예제를 빌드하면 아래와 같은 에러 메세지를 볼 수 있습니다. 
+이전 예제와 반대로 책의 정보를 가지고 ISBN값을 찾는 예제입니다. 이 예제를 빌드하면 아래와 같은 에러 메세지를 볼 수 있습니다.
 
 ```rust
 error[E0599]: the method `insert` exists for struct `HashMap<Book, String>`, but its trait bounds were not satisfied
@@ -423,7 +425,7 @@ fn main() {
 러스트에서는 파일을 읽고 쓰기 위해 3가지 module을 알아야합니다. 일단 각각이 무엇인지 간단하게 설명하고 어떻게 사용하는지를 알아보겠습니다.
 
 1. std::fs 모듈: 로컬 파일시스템에 있는 파일을 처리하기위한 모듈입니다. 일반적으로 운영체제에 상관없이 사용할 수 있는 기능들을 모아놓은 것입니다. 그 중에서 File 구조체가 일반 파일에 접근할 때 사용됩니다.
-2. std::io 모듈: 입출력을 위한 타입, 라이브러리, 에러 타입 등을 모아놓은 모듈입니다. Read, Write라는 trait가 있습니다. 주의할 것은 std::io::Read라는 trait가 있다는 것의 의미를 알아야합니다. 트레이트가 있다는 것은 다른 어딘가에 구현체가 있어야 한다는 것입니다. 코드 파일에 use std::io::Read라고 선언을 해서 사용은 하지만 사실 구현체는 다른 곳에 있습니다. 예를 들면 std::fs::File 구조체가 std::io::Read트레이트를 구현하고 있습니다. 아래 예제에서 사용 방법을 보겠습니다. 
+2. std::io 모듈: 입출력을 위한 타입, 라이브러리, 에러 타입 등을 모아놓은 모듈입니다. Read, Write라는 trait가 있습니다. 주의할 것은 std::io::Read라는 trait가 있다는 것의 의미를 알아야합니다. 트레이트가 있다는 것은 다른 어딘가에 구현체가 있어야 한다는 것입니다. 코드 파일에 use std::io::Read라고 선언을 해서 사용은 하지만 사실 구현체는 다른 곳에 있습니다. 예를 들면 std::fs::File 구조체가 std::io::Read트레이트를 구현하고 있습니다. 아래 예제에서 사용 방법을 보겠습니다.
 3. std::path 모듈: 파일을 처리하기 위해서는 파일의 경로를 알아야합니다. 보통 문자열로 사용할 수도 있겠지만, 문자열로 경로를 표현하면 운영체제에 종속적으로 동작할 수 밖에 없습니다. 윈도우에서는 디렉토리간 구분을 '\'로 하지만 유닉스에서는 '/'로 하니까요. 어느 운영체제나 플랫폼에서도 동작하기 위해서는 파일의 경로를 추상화해야합니다. std::path에 있는 PathBuf와 Path 타입이 파일의 경로를 추상화하는 것들입니다.
 
 이제 이 3가지를 가지고 파일을 읽는 예제를 한번 만들어보겠습니다. 설명은 길었지만 코드는 간단합니다.
@@ -459,6 +461,7 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 ```
+
 ```bash
 $ cargo run --bin std_library_file
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s
@@ -488,6 +491,7 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 ```
+
 ```bash
 % cargo run
    Compiling ex v0.1.0 (/Users/user/ex)
@@ -522,4 +526,3 @@ fn multiple_errors(
 ```
 
 std::io::Result<()>를 반환하도록하면 parse()의 에러를 처리하지못하고, parse()의 에러를 반환하도록하면 open()의 에러를 처리하지 못합니다. 두가지 타입의 에러를 모두 가질 수 있는 상위 에러를 구현해보세요. 정수값이 저장된 텍스트 파일을 읽어서 정수값을 파싱하는 프로그램을 만들어보세요. 같은 프로그램에 문자열만있는 텍스트 파일을 읽도록해서 파싱에서 에러가 발생하도록 만들어보세요.
-

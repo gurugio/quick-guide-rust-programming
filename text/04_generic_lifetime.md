@@ -58,6 +58,7 @@ fn main() {
     println!("Sum: {:?}", result);
 }
 ```
+
 ```bash
 $ cargo run --bin generic_struct
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
@@ -66,7 +67,7 @@ Sum: Pair { first: 15, second: 10 }
 Sum: Pair { first: 15, second: 10 }
 ```
 
-코드를 하나씩 뜯어보겠습니다. 가장 먼저 Pair라는 구조체를 만들었습니다. 
+코드를 하나씩 뜯어보겠습니다. 가장 먼저 Pair라는 구조체를 만들었습니다.
 
 ```rust
 #[derive(Debug)]
@@ -82,7 +83,7 @@ struct Pair<T> {
 > C++ 언어의 제네릭과 완전히 동일한 문법을 가지고있고, 파이선등의 다른 언어들에서 제네릭을 사용하는 것과도 거의 동일하므로, 다른 언어에서 제네릭을 접해보신 분들은 쉽게 사용하실 수 있습니다.
 >
 
-그 다음은 일반 함수 add입니다. 
+그 다음은 일반 함수 add입니다.
 
 ```rust
 fn add<T>(a: T, b: T) -> T
@@ -126,7 +127,7 @@ where
 
 이전에 트레이트를 소개할 때 구현해본 것과 조금 더 복잡해졌습니다. 각 차이점들을 하나씩 확인해보겠습니다.
 
-가장 먼저 Pair 타입이 제네릭 타입이기 때문에 Pair타입을 사용하기 위해서 트레이트 구현에도 똑같이 <T>라는 타입 지정이 추가(이렇게 제네릭에서 타입이 지정되는 것을 바인딩이라고 부릅니다)되었습니다. impl<T>와 Pair<T> 이렇게 2군데에 타입 파라미터를 추가합니다.
+가장 먼저 Pair 타입이 제네릭 타입이기 때문에 Pair타입을 사용하기 위해서 트레이트 구현에도 똑같이 &lt;T&gt;라는 타입 지정이 추가(이렇게 제네릭에서 타입이 지정되는 것을 바인딩이라고 부릅니다)되었습니다. impl&lt;T&gt;와 Pair&lt;T&gt; 이렇게 2군데에 타입 파라미터를 추가합니다.
 
 ```rust
 impl<T> std::ops::Add for Pair<T>
@@ -183,6 +184,7 @@ std::ops::Add 트레이트의 구현을 보겠습니다.
 두 타입을 더한 결과물은 같은 타입이 되는게 보통이겠지요. 그래서 Output을 Self 타입으로 지정합니다. 그리고 add메소드를 구현합니다. add 메소드의 반환값은 함수 내부에서 새롭게 만들어진 Self타입의 객체입니다. first와 second 필드를 각각 계산해서 새로운 Self 타입의 객체를 만들어서 반환합니다.
 
 그래서 최종적으로 main함수에서 Pair타입의 두 변수, left_pair와 right_pair를 add함수에 전달할 수 있게됩니다.
+
 ```rust
 fn main() {
     let left_pair: Pair<i32> = Pair {
@@ -200,7 +202,7 @@ fn main() {
 ...
 ```
 
-여기에서 result의 타입이 생략되었지만 Pair<i32>타입이라는 것을 알아낼 수 있어야합니다.
+여기에서 result의 타입이 생략되었지만 Pair&lt;i32&gt;타입이라는 것을 알아낼 수 있어야합니다.
 
 이와같이 러스트 표준 라이브러리나 기타 라이브러리 등에 있는 함수나 트레이트등은 대부분 제네릭을 사용하고 있습니다. 이것들을 사용하기 위해서는 먼저 해당 제네릭 타입 파라미터가 어떤 트레이트를 구현해야하는지를 확인해서, 트레이트를 구현하고 그 다음 제네릭 함수나 트레이트를 이용하면 됩니다. 이렇게 제네릭과 트레이트를 같이 사용되는 경우가 거의 대부분입니다. 처음에는 많이 낯설고 이해하기 쉽지 않지만, 몇번 만들다보면 익숙해집니다.
 
@@ -247,6 +249,7 @@ fn main() {
     print_info(&person);
 }
 ```
+
 ```bash
 $ cargo run --bin generic_trait
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
@@ -289,7 +292,8 @@ fn print_info(item: &dyn Printable<u32>) {
     item.print();
 }
 ```
-print_info에 전달할 트레이트 객체도 <u32>이라는 타입 바인딩을 가지고있어야합니다. 트레이트 객체와 제네릭이 결합된게 한번에 눈에 들어오지 않을 수 있습니다. 이렇게 3단계로 생각하면 좋습니다.
+
+print_info에 전달할 트레이트 객체도 &lt;u32&gt;이라는 타입 바인딩을 가지고있어야합니다. 트레이트 객체와 제네릭이 결합된게 한번에 눈에 들어오지 않을 수 있습니다. 이렇게 3단계로 생각하면 좋습니다.
 
 1. print_info에 전달되는 인자는 하나의 타입이 아니라, 다양한 타입의 레퍼런스를 받을 수 있다.
 2. print_info에 전달되는 타입은 Printable이라는 트레이트를 구현한 타입의 레퍼런스이다.
@@ -361,6 +365,7 @@ fn main() {
     println!("Bruce is at : {:?}", bruce.location);
 }
 ```
+
 ```bash
 $ cargo run --bin generic_trait_struct
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
@@ -375,8 +380,7 @@ Bruce is at : "NewYork"
 1. 트레이트 Printable의 AGE 타입 파라이터: 나이를 표현하는 타입입니다.
 2. 구조체 Person의 ADDR 타입 파라미터: 주소를 표현하는 타입입니다.
 
-약간의 요령이 있는데 Person 구조체의 타입을 구현할 때는 항상 Person<ADDR>로 사용한다고 기억하면 편합니다. Printable 트레이트의 구현 코드에서도 Person<ADDR>과 같이 제네릭 타입을 항상 써줘야한다는걸 주의해야합니다.
-
+약간의 요령이 있는데 Person 구조체의 타입을 구현할 때는 항상 Person&lt;ADDR&gt;로 사용한다고 기억하면 편합니다. Printable 트레이트의 구현 코드에서도 Person&lt;ADDR&gt;과 같이 제네릭 타입을 항상 써줘야한다는걸 주의해야합니다.
 
 ```rust
 impl<ADDR> Person<ADDR> {
@@ -437,7 +441,7 @@ impl<ADDR> Person<ADDR> {
 }
 ```
 
-사람의 이름, 나이, 위치를 저장하는 구조체입니다. 위치가 꼭 집 주소같은 문자열이 될 필요는 없으므로 ADDR이라는 제네릭 타입을 사용해줬습니다. 우편번호도 될 수 있고, 좌표도 될 수 있으니 Post나 Coordinates같이 새로운 타입을 사용할 수도 있겠네요. 그래서 제네릭 타입으로 만들었나봅니다. impl<ADDR> Person<ADDR>과 같이 ADDR이라는 제네릭 타입을 어디에 써줘야되는지를 잘 봐주세요.
+사람의 이름, 나이, 위치를 저장하는 구조체입니다. 위치가 꼭 집 주소같은 문자열이 될 필요는 없으므로 ADDR이라는 제네릭 타입을 사용해줬습니다. 우편번호도 될 수 있고, 좌표도 될 수 있으니 Post나 Coordinates같이 새로운 타입을 사용할 수도 있겠네요. 그래서 제네릭 타입으로 만들었나봅니다. impl&lt;ADDR&gt; Person&lt;ADDR&gt;과 같이 ADDR이라는 제네릭 타입을 어디에 써줘야되는지를 잘 봐주세요.
 
 이제 우리가 보고자했던 코드가 나옵니다. 제네릭 타입을 사용한 구조체에 제네릭 타입을 사용한 트레이트를 구현하는 코드입니다.
 
@@ -453,19 +457,20 @@ impl<ADDR> Printable<u32> for Person<ADDR> {
 ```
 
 첫줄은 트레이트 구현을 선언하는 코드인데 2개의 제네릭 타입이 동시에 나오므로 눈에 잘 안들어옵니다. 한글로 다시 써보겠습니다.
+
 ```rust
 impl<구조체의 제네릭 타입> 트레이트<트레이트의 제네릭 타입> for 구조체이름<구조체의 제네릭 타입> {
 ```
 
 Printable 트레이트가 u32타입으로 구현됩니다. 따라서 제네릭 타입을 사용하는 get_age라는 함수가 u32 타입을 반환하게됩니다.
 
-마지막으로 print_info에 전달되는 트레이트 객체가 Printable<u32> 타입이 됩니다.
+마지막으로 print_info에 전달되는 트레이트 객체가 Printable&lt;u32&gt; 타입이 됩니다.
 
 ```rust
 fn print_info(item: &dyn Printable<u32>) {
 ```
 
-Printable<i32>나 Printable<String>등등 제네릭 타입이 다른 Printable 트레이트를 구현한 타입들은 print_info에 전달 될 수 없습니다. 오직 Printable<u32>만이 사용될 수 있습니다.
+Printable&lt;i32&gt;나 Printable&lt;String&gt;등등 제네릭 타입이 다른 Printable 트레이트를 구현한 타입들은 print_info에 전달 될 수 없습니다. 오직 Printable&lt;u32&gt;만이 사용될 수 있습니다.
 
 트레이트와 구조체, 열거형에 모두 제네릭 타입이 사용되면 여러개의 제네릭 타입이 사용되고, 어느게 어디에 바인딩된 타입인지 헷갈릴 수 있습니다. 조금 시간이 필요한 부분이므로 조급하게 생각하지말고 천천히 적응해나가도록 합시다. 조금씩 읽고 쓰다보면 그 편리함과 유연함을 즐길 수 있는 순간이 올 것입니다.
 
@@ -562,7 +567,7 @@ pub type Result<T, E = MyError> = std::result::Result<T, E>;
 - WrongInput(String): 잘못된 입력의 경우 어떤 입력이 잘못되었는지를 에러 메세지로 알려주기 위해 String 데이터를 포함하는 에러 값을 만들어줍니다.
 - UnknownValue{…}: 이 에러는 사용자에게 좀 더 많은 데이터를 전달하기 위해 구조체와 같이 여러 필드를 포함하는 에러 타입입니다.
 
-이렇게 에러 타입에 따라 다양한 정보를 넣어줄 수 있으니 너무나 편리해집니다. 경우에 따라 서로 다른 타입의 데이터을 별도로 처리하기 위해 코드가 복잡해질 필요가 없습니다. MyError라는 타입 하나만으로 모든 에러를 처리할 수 있으면서도, 각 에러 경우에 따라 다른 정보를 넣어서 관리할 수 있으니 에러 처리 코드가 간결해집니다. 또한 러스트에서 항상 모든 에러를 다 처리해줬는지를 체크해주니 에러 처리를 빼놓는 일을 막을 수 있습니다. 프로젝트가 커지거나 개발을 해나가면서 좀 더 다양한 에러가 발생할 수 있습니다. 당연히 MyError에 새로 추가된 데이터 타입을 추가하면 됩니다. 
+이렇게 에러 타입에 따라 다양한 정보를 넣어줄 수 있으니 너무나 편리해집니다. 경우에 따라 서로 다른 타입의 데이터을 별도로 처리하기 위해 코드가 복잡해질 필요가 없습니다. MyError라는 타입 하나만으로 모든 에러를 처리할 수 있으면서도, 각 에러 경우에 따라 다른 정보를 넣어서 관리할 수 있으니 에러 처리 코드가 간결해집니다. 또한 러스트에서 항상 모든 에러를 다 처리해줬는지를 체크해주니 에러 처리를 빼놓는 일을 막을 수 있습니다. 프로젝트가 커지거나 개발을 해나가면서 좀 더 다양한 에러가 발생할 수 있습니다. 당연히 MyError에 새로 추가된 데이터 타입을 추가하면 됩니다.
 
 내가 만든 함수에서는 MyError를 반환할 수 있지만, 다른 라이브러리를 사용할 때 얻게되는 다른 타입의 에러는 어떻게 처리해야할까요? 그럴때는 아래와 같이 에러의 타입을 바꿔주면 됩니다. 이 함수를 호출하는 상위 함수는 MyError 타입만을 사용하게 됩니다.
 
@@ -671,6 +676,7 @@ pub fn handle_command(cmd: &str) -> Result<usize> {
     Ok(0)
 }
 ```
+
 ```rust
 // src/error/main.rs
 mod mycommand;
@@ -702,6 +708,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin error
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -723,10 +730,12 @@ fn super_handle_command(cmd: &str) -> Result<usize> {
 ```
 
 mycommand::handle_command가 성공했을 경우
+
 1. ?연산자는 usize값을 꺼내줌.
 2. super_handle_command는 Ok(성공한 결과값)을 반환하게됨
 
 mycommand::handle_command가 에러를 반환하는 경우
+
 1. ?연산자는 MyError타입의 에러를 super_handle_command의 반환값으로 넘기려고 시도함
 2. SuperError의 From 트레이트에 의해 MyError가 SuperError::CommandError로 변환됨
 3. super_handle_command의 최종적인 반환값은 SuperError::CommandError가 됨
@@ -803,7 +812,7 @@ fn main() {
 
 Storage는 창고에 저장된 과일의 갯수와 가격을 관리합니다. 다음과 같이 과일 이름을 키로 갖고, 과일에 대한 정보 Item구조체를 값으로 갖는 해쉬맵입니다.
 
-```
+```code
 {
     "apple": Item {name: "apple", price: 1.0, quantity: 1.0},
     "banana": Item {name: "banana", price: 2.0, quantity: 20}
@@ -821,6 +830,7 @@ Statistics는 각각의 창고에 있는 과일 가격에 대한 통계를 계�
 ```
 
 단계별로 설명을 해보면
+
 1. items는 Storage가 가지고있는 items의 레퍼런스입니다
 2. items.values()는 해쉬맵에 있는 모든 값에 대한 이터레이터를 반환합니다
 3. 이터레이터의 fold메소드는 초기값 0을 갖고, items라는 해쉬맵의 각 값들에서 price 값들을 읽어서 acc 변수에 누적해서 더합니다. acc는 최종에는 모든 과일들의 가격을 다 합친 값이 되고 total에 저장됩니다.
@@ -840,7 +850,7 @@ impl<'a> Statistics<'a> {
     }
 ```
 
-Statistics 객체를 선언할 때, &Hashmap과 같이 레퍼런스를 사용하는게 아니라 &'a HashMap으로 러퍼런스 기호에 'a라는 이름을 지정해주었습니다. 그래서 items라는 레퍼런스의 수명이 a로 지정됩니다. 그리고 new함수에서 전달받은 레퍼런스가 바로 수명이름 a로 저장하는 레퍼런스입니다. 
+Statistics 객체를 선언할 때, &Hashmap과 같이 레퍼런스를 사용하는게 아니라 &'a HashMap으로 러퍼런스 기호에 'a라는 이름을 지정해주었습니다. 그래서 items라는 레퍼런스의 수명이 a로 지정됩니다. 그리고 new함수에서 전달받은 레퍼런스가 바로 수명이름 a로 저장하는 레퍼런스입니다.
 
 Statistics 자기 자신보다 Statistics가 가지고있는 레퍼런스가 더 긴 수명(더 나중에 객체가 해지되어야함)을 가지고있어야 한다는 것입니다. 그래서 러스트 컴파일러는 Statistics가 가지고있는 레퍼런스의 수명 이름들을 가지고, Statistics가 참조하는 객체들 중 어느 한쪽이 Statistics 객체보다 먼저 해지되지 않도록 감시할 수 있습니다.
 
