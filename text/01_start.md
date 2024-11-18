@@ -6,7 +6,7 @@ Rust를 경험해보기 위한 환경을 준비하고, 앞으로 소개할 예�
 
 ### Rust 컴파일러 설치
 
-최신 언어 트랜드에 맞게 컴파일러 설치나 개발 환경 셋팅은 아주 간단합니다. Rust언어의 개발 환경을 설치하기 위한 rustup이라는 설치 관리자가 있고, https://rustup.rs/ 에 접속하면 어떻게 rustup이라는 툴을 설치할 수 있는지를 알려줍니다.
+최신 언어 트랜드에 맞게 컴파일러 설치나 개발 환경 셋팅은 아주 간단합니다. Rust언어의 개발 환경을 설치하기 위한 rustup이라는 설치 관리자가 있고, <https://rustup.rs/> 에 접속하면 어떻게 rustup이라는 툴을 설치할 수 있는지를 알려줍니다.
 
 사이트에 접속하시면 사용중인 운영체제에 따라 조금씩 다른 메세지나 명령을 보여줍니다. 리눅스/유닉스 계열이라면 다음과 같은 명령을 알려줄 것입니다.
 
@@ -102,6 +102,7 @@ source "$HOME/.cargo/env"
 중간에 설치 환경 셋팅을 디폴트로 진행할 것인지, 본인이 수정할 것인지 물어보는데 1번을 입력해서 디폴트 환경으로 설치를 진행했습니다. 디폴트 환경을 선택하면 rustc같은 컴파일러와 cargo, clippy, rustfmt 등 개발에 필수적인 툴들을 자동으로 설치하고 환경 변수를 자동으로 설정해줍니다.
 
 설치가 완료되면 아래와같이 .cargo/env 파일이 생성됩니다.
+
 ```bash
 gurugio@AL01945427:~$ cat .cargo/env
 #!/bin/sh
@@ -120,7 +121,8 @@ esac
 실행파일을 찾는 환경변수 PATH에 .cargo/bin을 추가하는 파일입니다. .cargo/bin 디렉토리는 cargo, rustc등 Rust개발에 필요한 실행 파일들이 저장되어있습니다.
 
 이제 `source .bashrc` 명령을 실행하면 새로운 환경 변수가 적용되서 cargo등 실행파일을 사용할 수 있게 됩니다.
-```
+
+```bash
 gurugio@AL01945427:~$ source .bashrc
 gurugio@AL01945427:~$ cargo --version
 cargo 1.76.0 (c84b36747 2024-01-18)
@@ -130,7 +132,7 @@ rustc 1.76.0 (07dca489a 2024-02-04)
 
 ## Cargo 툴 소개
 
-최신 프로그래밍 언어들은 대부분 프로젝트를 쉽게 빌드할 수 있게 해주고, 라이브러리를 관리할 수 있는 툴을 제공합니다. C++은 cmake가 있고 C에는 make가 있긴 하지만, 사용하기 편리하다고 하기는 어렵습니다. Makefile이나 CMakeLists.txt 문법이 강력하다고는 할 수 있지만 직관적이라고 하기는 어렵다는 것은 많은 분들이 동의하실겁니다. 
+최신 프로그래밍 언어들은 대부분 프로젝트를 쉽게 빌드할 수 있게 해주고, 라이브러리를 관리할 수 있는 툴을 제공합니다. C++은 cmake가 있고 C에는 make가 있긴 하지만, 사용하기 편리하다고 하기는 어렵습니다. Makefile이나 CMakeLists.txt 문법이 강력하다고는 할 수 있지만 직관적이라고 하기는 어렵다는 것은 많은 분들이 동의하실겁니다.
 
 Rust 언어로 개발할 때 가장 많이 사용하게되는 툴은 Cargo라는 툴 입니다. 프로젝트를 생성과 빌드, 외부 라이브러리 다운로드 등 프로젝트 관리를 위한 모든 일을 하는 툴입니다. 도움말을 확인해보면 new, build, clean등 이름만 봐도 무슨 일을 하는 것인지 알수있는 명령들이 보입니다.
 
@@ -178,21 +180,23 @@ See 'cargo help <command>' for more information on a specific command.
 
 가장 처음 사용하게되는 명령은 cargo new 명령입니다. 새로운 프로젝트를 생성하는 명령입니다. Rust는 하나의 프로젝트(여러개의 실행파일과 실행 파일에 필요한 여러개의 라이브러리가 함께있는)를 패키지라고 부릅니다. 그래서 new 명령의 설명에 새로운 cargo package를 만든다는 설명이 있는 것입니다.
 new 명령을 아래와 같이 실행하면 새로운 디렉토리와 하위 디렉토리 및 파일들을 만들어줍니다. Rust언어의 패키지나 프로젝트 관리에 대해서는 나중에 다시 설명하겠습니다.
+
 ```bash
 % cargo new my-rust-book
 l     Created binary (application) `my-rust-book` package
 % cd my-rust-book
 % ls
-Cargo.toml	src
+Cargo.toml  src
 % ls -R
-Cargo.toml	src
+Cargo.toml  src
 
 ./src:
 main.rs
 ```
+
 cargo new 명령으로 my-rust-book이라는 디렉토리와, my-rust-book/src라는 디렉토리가 생성됩니다. 그리고 my-rust-book/Cargo.toml, my-rust-book/src/main.rs 파일들이 생성됩니다.
 
-참고로 이미 존재하는 디렉토리를 Rust언어 프로젝트 디렉토리로 만들고 있다면 아래와 같이 cargo init 명령을 사용하면 됩니다. Cargo.toml 파일을 생성하고 그 외에 src디렉토리를 만들지 않는 것을 알 수 있습니다. 
+참고로 이미 존재하는 디렉토리를 Rust언어 프로젝트 디렉토리로 만들고 있다면 아래와 같이 cargo init 명령을 사용하면 됩니다. Cargo.toml 파일을 생성하고 그 외에 src디렉토리를 만들지 않는 것을 알 수 있습니다.
 
 Cargo.toml은 현재 디렉토리에 있는 main.rs라는 파일을 빌드해서 pyalgo라는 실행파일을 만들 것입니다.
 
@@ -229,9 +233,9 @@ path = "main.rs"
 l     Created binary (application) `my-rust-book` package
 % cd my-rust-book
 % ls
-Cargo.toml	src
+Cargo.toml  src
 % ls -R
-Cargo.toml	src
+Cargo.toml  src
 
 ./src:
 main.rs
@@ -256,6 +260,7 @@ edition = "2021"
 package 섹션에 있는 name과 version은 패키지의 이름과 버전입니다. edition이라는 항목은 Rust 언어의 버전입니다. 숫자를 보면 알수있듯이 2021년도에 정의된 버전입니다. 이 책을 쓰는 2024년 기준으로 가장 최신 버전은 2021입니다. 그 이전에는 2018 버전이 있었습니다. 지금 단계에서는 Cargo툴이 기본으로 지정해주는 값을 그대로 쓰면 됩니다.
 
 dependencies 섹션은 이 패키지에서 사용될 외부 라이브러리를 지정합니다. 이 책에서는 표준 라이브러리만 사용하지만, 만약에 외부 라이브러리를 사용하고 싶다면 다음과 같이 “cargo add” 명령으로 라이브러리를 dependencies 섹션에 추가할 수 있습니다. 다음은 anyhow라는 라이브러리를 추가해본 것입니다.
+
 ```bash
 gurugio@AL01945427:~/my-rust-book$ cargo add anyhow
     Updating crates.io index
@@ -276,7 +281,7 @@ edition = "2021"
 anyhow = "1.0.80"
 ```
 
-crate.io라는 메세지가 나오는데 https://crates.io/라는 사이트에서 anyhow라이브러리를 다운받기 때문입니다. crates.io사이트에 접속해서 anyhow를 검색해보면 가장 최신 버전이 1.0.80인것을 확인할 수 있습니다. 
+crate.io라는 메세지가 나오는데 <https://crates.io/> 라는 사이트에서 anyhow라이브러리를 다운받기 때문입니다. crates.io사이트에 접속해서 anyhow를 검색해보면 가장 최신 버전이 1.0.80인것을 확인할 수 있습니다.
 
 그럼 개발 환경 셋팅이 끝났으니 간단하게 Hello, World!를 출력해보겠습니다. 다음과 같이 main.rs를 만들어보겠습니다.
 

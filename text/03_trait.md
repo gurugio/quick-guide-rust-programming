@@ -75,6 +75,7 @@ fn main() {
     print_info(&book);
 }
 ```
+
 ```bash
 $ cargo run --bin trait
     Finished dev [unoptimized + debuginfo] target(s) in 0.75s
@@ -223,13 +224,13 @@ fn print_info(item: &dyn Printable<Age = u32>) {
 
 ## 표준 라이브러리에 포함된 트레이트
 
-개발자들이 직접 필요한 트레이트를 만들 수 있지만, 러스트의 표준 라이브러리(The Rust Standard Library: https://doc.rust-lang.org/std/index.html)에서 미리 만들놓은 편리한 트레이트들이 있습니다. 표준 라이브러리라고 부르는 만큼 어떤 상황에서도 사용할 수 있을만큼 성능이나 범용적이 좋은 트레이트들입니다. 그중에서 초보 단계에서도 자주 사용하게되는 몇가지만 예제를 만들어보겠습니다.
+개발자들이 직접 필요한 트레이트를 만들 수 있지만, 러스트의 표준 라이브러리(The Rust Standard Library: <https://doc.rust-lang.org/std/index.html>)에서 미리 만들놓은 편리한 트레이트들이 있습니다. 표준 라이브러리라고 부르는 만큼 어떤 상황에서도 사용할 수 있을만큼 성능이나 범용적이 좋은 트레이트들입니다. 그중에서 초보 단계에서도 자주 사용하게되는 몇가지만 예제를 만들어보겠습니다.
 
 ### 객체의 내부 데이터를 출력하는 트레이트 std::fmt::{Display, Debug}
 
-객체를 터미널에 출력하는 방법을 이야기해보겠습니다. 특히 디버깅할 때 가장 많이 사용할 것입니다. 그리고 사용자에게 데이터를 보여주는 인터렉티브한 어플리케이션을 만들다보면 객체의 값을 터미널에 출력해야될 일이 자주 생깁니다. 
+객체를 터미널에 출력하는 방법을 이야기해보겠습니다. 특히 디버깅할 때 가장 많이 사용할 것입니다. 그리고 사용자에게 데이터를 보여주는 인터렉티브한 어플리케이션을 만들다보면 객체의 값을 터미널에 출력해야될 일이 자주 생깁니다.
 
-객체를 출력하기위해서 이미 우리가 여러번 사용해본게 있습니다. 구조체에  derive(Debug)구문을 추가해서 디버그 메세지를 출력하는걸 해봤었습니다. 
+객체를 출력하기위해서 이미 우리가 여러번 사용해본게 있습니다. 구조체에  derive(Debug)구문을 추가해서 디버그 메세지를 출력하는걸 해봤었습니다.
 
 ```rust
 #[derive(Debug)]
@@ -254,7 +255,7 @@ impl fmt::Debug for Point {
 
 아래 Debug 트레이트의 메뉴얼을 확인하면 어느 메소드를 가지고있고, 어떤 역할을 가지는지를 알 수 있습니다.
 
-https://doc.rust-lang.org/std/fmt/trait.Debug.html
+<https://doc.rust-lang.org/std/fmt/trait.Debug.html>
 
 가장 윗부분을 보면 트레이트의 정의와 필수 메소드를 확인할 수 있습니다.
 
@@ -306,6 +307,7 @@ fn main() {
     println!("For your information: {}", dot);
 }
 ```
+
 ```bash
 $ cargo run --bin trait_display_debug
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -398,6 +400,7 @@ fn main() {
     //print_info(&book);
 }
 ```
+
 ```bash
 $ cargo run --bin trait_clone
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.25s
@@ -443,6 +446,7 @@ fn print_info(item: &dyn Clone) {
 }
 ...
 ```
+
 ```rust
 error[E0038]: the trait `Clone` cannot be made into an object
   --> src/main.rs:50:22
@@ -456,7 +460,7 @@ error[E0038]: the trait `Clone` cannot be made into an object
 
 컴파일러 메세지가 약간 이해하기 어렵지만 이렇게 생각해보면 힌트가 될 수 있습니다. 트레이트 객체로 전달한다는 것은 원래의 타입이 뭔지를 숨기고 여러 타입이 공통으로 구현한 함수를 호출하는 것입니다. 만약 구현하는 함수가 clone 메소드처럼 Self를 반환한다면, 트레이트 객체의 원래 타입이 뭔지 알아야됩니다. 따라서 clone 메소드를 구현해야하는 Clone 트레이트는 트레이트 객체로 사용할 수 없는 것입니다.
 
-에러 메세지에서 알려주는 Object safety(https://doc.rust-lang.org/reference/items/traits.html#object-safety) 라는 규칙들이 있는데 트레이트 오브젝트를 만들어서 쓸 수 있는 트레이트가 가져야하는 규칙들입니다. 여기에 Sized 트레이트를 구현하면 안된다고 써있는데 Clone 트레이트는 상위 트레이트로 Sized 트레이트를 구현하고 있습니다. 위에 Clone트레이트의 정의를 보면 Clone:Sized라고 써있는데 Sized 트레이트를 상위 트레이트로 가진다는 표시입니다. Sized 트레이느는 바로 트레이트에서 사용하는 모든 타입들이 컴파일 시점에 어느 크기를 갖는지 알 수 있다는 표시입니다 컴파일 타임에 Self 타입의 크기를 알아야 메모리 복사에서 안정성을 보장할 수 있기 때문입니다. 참고로 이와같이 어떤 메소드를 구현하고자하는 트레이트가 아니라, 속성만 부여하고자하는 트레이트도 있습니다. 그리고 그런 트레이트들을 Marker trait라고 부릅니다. 그래서 Sized트레이트가 정의된 위치가 std::marker입니다.
+에러 메세지에서 알려주는 Object safety(<https://doc.rust-lang.org/reference/items/traits.html#object-safety>) 라는 규칙들이 있는데 트레이트 오브젝트를 만들어서 쓸 수 있는 트레이트가 가져야하는 규칙들입니다. 여기에 Sized 트레이트를 구현하면 안된다고 써있는데 Clone 트레이트는 상위 트레이트로 Sized 트레이트를 구현하고 있습니다. 위에 Clone트레이트의 정의를 보면 Clone:Sized라고 써있는데 Sized 트레이트를 상위 트레이트로 가진다는 표시입니다. Sized 트레이느는 바로 트레이트에서 사용하는 모든 타입들이 컴파일 시점에 어느 크기를 갖는지 알 수 있다는 표시입니다 컴파일 타임에 Self 타입의 크기를 알아야 메모리 복사에서 안정성을 보장할 수 있기 때문입니다. 참고로 이와같이 어떤 메소드를 구현하고자하는 트레이트가 아니라, 속성만 부여하고자하는 트레이트도 있습니다. 그리고 그런 트레이트들을 Marker trait라고 부릅니다. 그래서 Sized트레이트가 정의된 위치가 std::marker입니다.
 
 러스트는 이와같이 메모리 안정성을 위해서 복잡해보이는 규칙들을 가지고 있습니다. 과하다싶을 때도 있지만, 이런 규칙들을 개발자가 생각하면서 개발해야하는 언어들의 문제점을 해결하는게 이토록 쉽지않은 일이라는 것을 알 수 있습니다. 처음에는 복잡해보이고 의미를 알 수 없는 규칙들이지만, 메모리 안정성을 염두해두고 연습을 해나간다면 이해할 수 있습니다. 시작단계에서는 모든 트레이트가 다 트레이트 객체를 만들 수 있지 않다는 것만 기억해두고 점차 익숙해지면서 더 이해하면 됩니다.
 
@@ -495,6 +499,7 @@ fn main() {
     println!("{:?}", book_clone);
 }
 ```
+
 ```bash
 gkim@gkim-laptop:~/study/my-rust-book$ cargo run --bin trait_default
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
@@ -544,6 +549,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin trait_partialeq_first
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.00s
@@ -603,6 +609,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin trait_partialeq_second
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
@@ -616,14 +623,14 @@ PartialEq 외에도 Eq 트레이트가 있습니다. 하지만 보통 우리가 
 
 #### PartialEq와 Eq 트레이트의 차이
 
-러스트에서 일반적으로 두 객체가 같은지 비교하는 트레이트가 PartialEq라는 것이 이상하게 느껴질 것입니다. 왜 이름에 일부분(Partial)이라는 의미가 들어가는지, 왜 Eq가 기본이 아닌지 이상합니다. 사실 정의만 놓고 본다면 PartialEq는 Partial-equivalence 관계(https://en.wikipedia.org/wiki/Partial_equivalence_relation)를 확인하는 것입니다. 수학적인 표현들을 단순화시켜서 생각해보면
+러스트에서 일반적으로 두 객체가 같은지 비교하는 트레이트가 PartialEq라는 것이 이상하게 느껴질 것입니다. 왜 이름에 일부분(Partial)이라는 의미가 들어가는지, 왜 Eq가 기본이 아닌지 이상합니다. 사실 정의만 놓고 본다면 PartialEq는 Partial-equivalence 관계(<https://en.wikipedia.org/wiki/Partial_equivalence_relation>)를 확인하는 것입니다. 수학적인 표현들을 단순화시켜서 생각해보면
 
-1. a=b일때 b=a를 만족하고 
+1. a=b일때 b=a를 만족하고
 2. a=b이고 b=c일때 a=c를 만족하는지를
 
-이렇게 2가지를 확인하는 것입니다. 
+이렇게 2가지를 확인하는 것입니다.
 
-그리고 Eq 트레이트는 equivalence 관계(https://en.wikipedia.org/wiki/Equivalence_relation)를 확인하는 것인데 마찬가지로 수학적인 표현들을 단순화시켜보면
+그리고 Eq 트레이트는 equivalence 관계(<https://en.wikipedia.org/wiki/Equivalence_relation>)를 확인하는 것인데 마찬가지로 수학적인 표현들을 단순화시켜보면
 
 1. a==a를 만족하는지
 
@@ -699,6 +706,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin trait_partialeq_eq
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
@@ -754,6 +762,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin trait_partialeq_assert
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
@@ -778,6 +787,7 @@ pub enum Command {
 }
 ...
 ```
+
 ```bash
 $ cargo run --bin trait_partialeq_assert
    Compiling ex v0.1.0 (/Users/user/ex)
@@ -929,8 +939,8 @@ fn main() {
 }
 ```
 
-우리가 구현해야할 것은 PartialOrd 트레이트의 partial_cmp 메소드입니다. 이 메소드는 Option<Ordering>을 반환합니다. 왜 Option을 사용하는지는 예제 코드를 보면 알 수 있습니다. height 값이 0이거나 음수인 경우, 아직 객체가 제대로 초기화되지 않았거나 버그로 인해 객체의 데이터가 깨졌을 수 있습니다. 그렇게 단순히 비교만 하는게 아니라 비교할 수 없는 상황이 있을 수도 있기 때문에 그런 에러 상황을 처리하기위해 Option을 반환하도록 했습니다. Rust언어가 얼마나 에러 처리에 철저한지 알 수 있습니다.
-그리고 PartialOrd 트레이트를 사용하기 위해 한가지 더 새롭게 알아야할 것이 있습니다. 
+우리가 구현해야할 것은 PartialOrd 트레이트의 partial_cmp 메소드입니다. 이 메소드는 Option&lt;Ordering&gt;을 반환합니다. 왜 Option을 사용하는지는 예제 코드를 보면 알 수 있습니다. height 값이 0이거나 음수인 경우, 아직 객체가 제대로 초기화되지 않았거나 버그로 인해 객체의 데이터가 깨졌을 수 있습니다. 그렇게 단순히 비교만 하는게 아니라 비교할 수 없는 상황이 있을 수도 있기 때문에 그런 에러 상황을 처리하기위해 Option을 반환하도록 했습니다. Rust언어가 얼마나 에러 처리에 철저한지 알 수 있습니다.
+그리고 PartialOrd 트레이트를 사용하기 위해 한가지 더 새롭게 알아야할 것이 있습니다.
 
 partial_cmp메소드에서 가장 먼저 에러 상황을 확인한 이후에는 실제로 비교해야할 데이터를 비교합니다. std::cmp::PartialOrd라는 트레이트의 partial_cmp 메소드의 반환값이 std::cmp::Ordering이라는 타입입니다. Ordering은 enum 타입으로 Greater, Less, Equal이라는 3가지 타입을 가지고 있습니다. 메소드를 호출하는 객체가 더 크다면 Ordering::Greater를 반환합니다. 작으면 Ordering::Less, 같으면 Ordering::Equal을 반환합니다.
 
@@ -1010,6 +1020,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin trait_partialord_sort_first
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -1083,6 +1094,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin trait_partialord_sort_second
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.35s
@@ -1101,7 +1113,7 @@ ccc is 120
 
 #### From과 Into
 
-특정 타입을 다른 타입으로 바꿀때 사용하는 트레이트입니다. 
+특정 타입을 다른 타입으로 바꿀때 사용하는 트레이트입니다.
 
 이 트레이트가 저처럼 C/C++만 사용하시던 분들께는 필요성이 잘 이해가 안될 수 있습니다. 저도 처음에는 이게 굳이 왜 필요한가 생각했었습니다. 그런데 한번 사용해보니 왜 필요한지 이해가되서 점점 더 자주 사용하게되었습니다. 제가 C/C++로 프로그래밍하는 경우, 한 모듈에서 다른 모듈로 데이터를 전달할때 구조체의 각 필드를 쪼개서 전달하는게 보통이었습니다. 그리고 다른 모듈은 여러개의 데이터를 하나의 새로운 데이터 구조로 만들어서 사용했습니다. 이 과정에서 데이터 순서가 바뀌거나, 허용되지 않는 값을 전달하는 등의 문제가 생기면 쉽게 해결하기 어려웠습니다.
 
@@ -1145,6 +1157,7 @@ fn main() {
     println!("The book is {isbn} and Rust in Action is {isbn2}");
 }
 ```
+
 ```bash
 $ cargo run --bin trait_from
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.34s
@@ -1152,12 +1165,12 @@ $ cargo run --bin trait_from
 The book is 718503105 and Rust in Action is 1617294551
 ```
 
-Book타입을 u32로 변경하기 위한 것이므로 최종 생성되는 데이터는 u32타입이 됩니다. 그래서 u32타입을 위해 From<Book> 트레이트를 구현하는 것입니다. from이라는 메소드를 구현하게되는데 인자를 Book 타입을 받고, 반환값이 u32가 됩니다.
+Book타입을 u32로 변경하기 위한 것이므로 최종 생성되는 데이터는 u32타입이 됩니다. 그래서 u32타입을 위해 From&lt;Book&gt; 트레이트를 구현하는 것입니다. from이라는 메소드를 구현하게되는데 인자를 Book 타입을 받고, 반환값이 u32가 됩니다.
 
 보통 From을 더 많이 사용하는데, From을 구현하면 Into가 자동으로 구현되기 때문입니다. 예제를 봐도 into 메소드를 구현하지 않았는데 into 메소드를 사용할 수 있는 것을 볼 수 있습니다.
 
 >
-> From<Book>에서 From은 트레이트의 이름이고, Book은 From 트레이트가 구현될 타입입니다. 이것은 제너릭 프로그래밍 기법입니다. 제너릭 프로그래밍은 다음에 다시 이야기하겠습니다. 이 예제에서는 From 트레이트를 Book 타입을 위해 구현했다고 이해해주시기 바랍니다.
+> From&lt;Book&gt;에서 From은 트레이트의 이름이고, Book은 From 트레이트가 구현될 타입입니다. 이것은 제너릭 프로그래밍 기법입니다. 제너릭 프로그래밍은 다음에 다시 이야기하겠습니다. 이 예제에서는 From 트레이트를 Book 타입을 위해 구현했다고 이해해주시기 바랍니다.
 >
 
 #### TryFrom과 TryInto
@@ -1254,7 +1267,7 @@ pub trait Iterator {
 }
 ```
 
-https://doc.rust-lang.org/std/iter/trait.Iterator.html
+<https://doc.rust-lang.org/std/iter/trait.Iterator.html>
 
 메뉴얼에 따르면 필수로 구현해야할 next라는 메소드가 1개있고, next메소드를 구현하면 자동으로 제공되는 메소드가 74개있다고 합니다. 그렇게 총 75개의 메소드를 가지는 트레이트입니다. next메소드는 자기 자신을 mutable 참조로 받아서 Option에 감싼 결과 값 하나를 반환하게 됩니다. 우리가 해야할 일은 Item이라는 타입에 무엇을 쓸지 정해야합니다. 보통은 자신이 구현한 구조체나 구조체의 참조가 되겠지요. 그리고 주의해야할 것이 이터레이터가 현재 몇개의 값을 반환했는지, 그리고 더 이상 반환할 값이 있는지 없는지 등의 상태 관리를 해야된다는 것입니다. 그렇게 이터레이터가 가진 상태가 변하기때문에 &mut self라는 타입을 사용하는 것입니다.
 
@@ -1320,6 +1333,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin trait_iterator
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.36s
@@ -1343,7 +1357,7 @@ book_array라는 이름의 배열을 만들어서 여러개의 Book 객체를 �
 
 Iterator 구현을 보면 가장 먼저 볼 수 있는게 Item 타입은 Book객체의 참조 포인터라는 것입니다. 이것은 이터레이터가 next() 메소드를 호출하거나 for 루프에서 사용될때 반환하는 값의 타입이 Book 객체의 참조 포인터라는 것입니다. 그 다음을 보면 next() 메소드의 구현이 나옵니다. 메소드 인자는 &mut self로 우리가 만든 BookSelf 구조체 mutable 참조가 됩니다. 그리고 반환값인 Option<&Book>이 되겠지요. 구현은 생각보다 간단합니다. 우선 현재 self.books라는 배열을 첫번째 객체와 나머지로 쪼갭니다. 만약 잘 쪼개진다면 어쨌든 배열안에 데이터(Book객체에 대한 포인터)가 1개 이상 들어있다는 뜻이므로 첫번째 객체는 반환하고 나머지는 self.books에 저장합니다. 그런데 배열을 쪼개려고했는데 None이 반환되었다는 것은 self.books 배열에 아무런 데이터가 없다는 뜻이므로 None을 반환해주면 됩니다.
 
-아마 다른 언어로 이터레이터를 만들어본 경험이 있으시다면 쉽게 익숙해질 수 있을거라 생각합니다. 단지 주의해야할 것은 반환값은 Option이므로 더이상 데이터가 없을때 None을 호출해야한다는 것입니다. 
+아마 다른 언어로 이터레이터를 만들어본 경험이 있으시다면 쉽게 익숙해질 수 있을거라 생각합니다. 단지 주의해야할 것은 반환값은 Option이므로 더이상 데이터가 없을때 None을 호출해야한다는 것입니다.
 
 >
 > 예제에 impl<'a>와 Bookshelf<'a>같이 새로운 형태의 문법이 사용되었습니다. 이것들을 라이프타임(Lifetime)이라고 합니다. 다음에 제대로 소개하겠습니다. 일단 이 예제와같이 아주 간단하게 라이프타임을 사용할 경우에는, 일단 라이프타임을 지정하지않고 코딩한 후에 컴파일러의 에러 메세지를 참고해서 라이프타임 지정을 추가해주면 됩니다.
@@ -1444,6 +1458,7 @@ fn main() {
     println!("{:?}", book_array);
 }
 ```
+
 ```bash
 $ cargo run --bin trait_iterator_iter_mut
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)

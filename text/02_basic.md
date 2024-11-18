@@ -17,7 +17,7 @@ for (i = 1; i < 100; i++)
 러스트에는 for문에 오직 이터레이터(Iterator)만 사용합니다. 파이선 언어와 유사하기도하고 최신 C++ 문법과도 유사합니다. for와 if만들 사용해서 최대한 C/C++이나 파이선 언어와 유사하게 만들어본 예제입니다.
 
 >
-> 예제 코드는 https://github.com/gurugio/my-rust-book에서 다운받을 수 있습니다.
+> 예제 코드는 <https://github.com/gurugio/my-rust-book>에서 다운받을 수 있습니다.
 >
 
 ```rust
@@ -256,8 +256,8 @@ fn fizzbuzz_if_else(max: i32) {
         } else if rem_five == 0 {
             println!("{} - Buzz", i);
         } else {
-						/* do nothing */
-				}
+                /* do nothing */
+        }
     }
 }
 ```
@@ -323,7 +323,8 @@ loop 사용법은 저 개인적으로 타 언어의 while 보다 더 편리하�
 Box<dyn Fn() + Send + 'static>
 Arc<Vec<Box<dyn Collector<dyn CollectorModel> + 'static>>>,
 ```
-출처 link: https://doc.rust-lang.org/book/ch19-04-advanced-types.html
+
+출처 link: <https://doc.rust-lang.org/book/ch19-04-advanced-types.html>
 
 참고로 함수를 정의할 때는 타입을 생략할 수 없습니다. 함수를 호출하기위해서는 입출력의 타입을 정확하게 알아야 컴파일러가 기계 코드를 생성할 수 있기 때문입니다.
 
@@ -345,6 +346,7 @@ fn string_to_digit(input: String) -> i32 {
     ret
 }
 ```
+
 ```bash
 error[E0369]: cannot subtract `char` from `char`
   --> src/main.rs:10:19
@@ -367,6 +369,7 @@ fn string_to_digit(input: String) -> i32 {
     ret
 }
 ```
+
 이 코드는 컴파일 에러도 없고 잘 동작합니다.
 
 위 예제를 통해 우리는 for문에서 생성되는 c라는 변수가 char라는 타입인지 알 수 있습니다. 러스트에서 for문에는 항상 이터레이터만 사용할 수 있다고 설명했는데, String이라는 구조체의 chars라는 메소드가 문자열의 각 문자들을 반환하는 이터레이터를 생성해주는 메소드라고 생각하면 됩니다.
@@ -428,6 +431,7 @@ string_to_digit 함수의 문제점은 문자열이 숫자 외의 문자를 가�
 저는 for, while, if, 함수호출 등 러스트의 기본 문법들에 대해서는 C나 최신 함수형 언어들에서 봐왔던 것들이라 금방 익숙해질 수 있습니다. 그러다가 처음으로 흥미를 느낀 문법이 바로 패턴 매칭 부분이었습니다. if-else가 여러개 있는 케이스는 C에서도 switch문으로 작성하기 때문에 별다른게 있을까 생각했었는데 패턴 매칭이라는 것의 의미를 이해하게되면서 감탄했던 기억이 있습니다.
 
 패턴 매칭은 사실 정확한 정의가 무었이기를 따지기 보다는 쓰다보면서 적응해나가는게 더 효율적인 접근방법이라고 생각합니다. 일단 가장 쉬운 예제를 하나 보겠습니다.
+
 ```rust
 // src/match/main.rs
 fn fizzbuzz_2(max: i32) {
@@ -510,7 +514,7 @@ generation=X
 30 - FizzBizz
 ```
 
-fizzbuzz_2함수는 이전에 만든 fizzbuzz 예제를 패턴 매칭으로 바꾼 함수입니다. match라는 키워드 다음에 있는 (i % 3, i % 5) 는 하나의 튜플 Tuples를 만들었습니다. 이 튜플의 값이 match다음에 나오는 각 패턴에 해당될 때 각기 다른 메세지를 출력하도록 만든 것입니다. 패턴에서 언더바 _ 는 모든 값을 의미합니다. 튜플의 값을 비교해야하는데 두개의 값이 있어야 하므로 하나는 0이고 다른 값은 무엇이든 상관없을 때 언더바를 사용한 것입니다. 패턴 매칭이므로 2개의 값이 있는 튜플의 패턴과 매칭이 되려면 각각의 매칭 케이스마다 2개의 값이 있게됩니다.
+fizzbuzz_2함수는 이전에 만든 fizzbuzz 예제를 패턴 매칭으로 바꾼 함수입니다. match라는 키워드 다음에 있는 (i % 3, i % 5) 는 하나의 튜플 Tuples를 만들었습니다. 이 튜플의 값이 match다음에 나오는 각 패턴에 해당될 때 각기 다른 메세지를 출력하도록 만든 것입니다. 패턴에서 언더바 \_ 는 모든 값을 의미합니다. 튜플의 값을 비교해야하는데 두개의 값이 있어야 하므로 하나는 0이고 다른 값은 무엇이든 상관없을 때 언더바를 사용한 것입니다. 패턴 매칭이므로 2개의 값이 있는 튜플의 패턴과 매칭이 되려면 각각의 매칭 케이스마다 2개의 값이 있게됩니다.
 
 if-else를 쓸 때와 마찬가지로 패턴의 비교 순서가 바뀌면 전혀 다른 결과를 만들어냅니다. 만약에 아래처럼 패턴 순서를 바꿨다면 어떤 일이 벌어질까요?
 
@@ -542,7 +546,7 @@ let gen = match age {
 
 age라는 변수를 0..20, 21..=50, 51=100이라는 3가지의 Range타입과 비교하는 것인데, 세밀하게따지면 age가 Range타입이 아니므로 패턴으로 매칭이 되는게 조금 이상할 수도 있습니다. 문법적으로 세세하게 따지면 복잡할 수도 있는 코드입니다만 지금은 이런 것도 가능하다 정도로 생각하고 일단 자주 활용하면서 익숙해지면 될듯 합니다. 단순히 age라는 변수의 범위만 따져서 어떤 동작을 수행하는게 아니라 각 경우에 따른 반환 값을 gen이라는 변수를 생성하는데 사용한 것을 주의해서 보시기 바랍니다. match라는 구문도 결국 if와 같이 반환값을 가지게됩니다.
 
-단순히 패턴에 일치하는 것만 확인하는게 아니라 아래와 같이 if와 결합해서 조건식을 써줄 수도 있습니다. 
+단순히 패턴에 일치하는 것만 확인하는게 아니라 아래와 같이 if와 결합해서 조건식을 써줄 수도 있습니다.
 
 ```rust
 for i in 1..=30 {
@@ -564,7 +568,7 @@ format!()은 문자열 객체를 반환해주는 매크로 함수입니다. 조�
 
 지금까지 if-else나 패턴 매칭의 예제를 보면 변수를 선언하는 부분에 복잡한 코드를 넣은 것을 볼 수 있었습니다. 이런 표현식에 대해서 좀 더 자세히 이야기해보겠습니다. 다음 예제는 지금까지 나온 값을 반환하는 표현식들을 모아놓은 것입니다.
 
-참고로 아래 예제를 실행해보면 ret_zero라는 함수를 호출하고있지 않다는 경고 메세지가 나옵니다. 에러는 아니므로 코드에 문제는 없습니다. _var같은 변수도 마찬가지로 생성만하고 사용하지않습니다만 경고 메세지가 없습니다. 변수 이름을 _로 시작했기 때문입니다. 이와같이 임시로 만들어놓고 나중에 사용하게될 변수는 이름을 _로 시작하면 컴파일을 깔끔하게 할 수 있습니다. ret_zero 함수의 이름에도 앞에 _를 붙여보면 경고 메세지가 사라지는 것을 볼 수 있습니다.
+참고로 아래 예제를 실행해보면 ret_zero라는 함수를 호출하고있지 않다는 경고 메세지가 나옵니다. 에러는 아니므로 코드에 문제는 없습니다. \_var같은 변수도 마찬가지로 생성만하고 사용하지않습니다만 경고 메세지가 없습니다. 변수 이름을 \_로 시작했기 때문입니다. 이와같이 임시로 만들어놓고 나중에 사용하게될 변수는 이름을 \_로 시작하면 컴파일을 깔끔하게 할 수 있습니다. ret_zero 함수의 이름에도 앞에 \_를 붙여보면 경고 메세지가 사라지는 것을 볼 수 있습니다.
 
 ```rust
 // src/expr/main.rs
@@ -633,7 +637,7 @@ fn ret_zero() -> i32 {
 }
 ```
 
-함수도 {와 }로 시작과 끝을 나타내고 반환값을 마지막에 써놓은 표현식입니다. 위 예제의 if-else도 각 {} 블럭 안에 반환값이 정해져있습니다. 그리고 match 구문에서도 각 상황에 따른 반환값이 있습니다. 이런 표현식은 ;를 만나면 그 반환값이 무시됩니다. 
+함수도 {와 }로 시작과 끝을 나타내고 반환값을 마지막에 써놓은 표현식입니다. 위 예제의 if-else도 각 {} 블럭 안에 반환값이 정해져있습니다. 그리고 match 구문에서도 각 상황에 따른 반환값이 있습니다. 이런 표현식은 ;를 만나면 그 반환값이 무시됩니다.
 
 반환값을 가지는 표현식을 이용해서 아래와 같은 변수 초기화 코드가 만들어질 수 있게됩니다. 중간중간에 있는 코드들은 ;로 끝나므로 반환값이 없고 마지막에있는 코드에만 ;이 없으므로 마지막줄에 있는 수식의 결과값이 y의 값이 됩니다.
 
@@ -663,7 +667,7 @@ let numbers: [i32; 5] = [1, 2, 3, 4, 5]; // Example array of numbers
 
 위와 같이 i32이라는 같은 타입의 데이터가 연속적으로 5개가 메모리에 연속적으로 저장되어있습니다. 메모리에 연속적으로 위치하고있기 때문에 우리는 numbers[0] 다음에 있는 데이터가 numbers[0]의 위치(포인터)에서 i32타입의 크기, 4만큼 더한 곳에 위치한다는 것을 알 수 있습니다.
 
-```
+```code
 numbers[0] ==> 0x100
 numbers[1] ==> 0x100 + 1 * 4 = 0x104
 ...
@@ -743,7 +747,7 @@ fn main() {
     println!("{}", sum_array_ref(&numbers));
     println!("{}", sum_slice(slice));
 }
-``` 
+```
 
 ```bash
 $ cargo run --bin array_slice
@@ -768,9 +772,9 @@ C같은 언어에서는 문자열은 char 타입의 배열입니다. char타입�
 
 그럼에도 러스트에서 슬라이스와 함께 문자열을 설명하는 경우가 많은데 그 이유를 알아보겠습니다.
 
-우선 String(https://doc.rust-lang.org/std/string/struct.String.html) 이라는 타입에 대해서 알아보겠습니다.
+우선 String(<https://doc.rust-lang.org/std/string/struct.String.html>) 이라는 타입에 대해서 알아보겠습니다.
 
-메뉴얼을 자세히 볼 필요는 없지만 첫줄만 봐도 결국 하나의 구조체라는 것을 알 수 있습니다. C에서와같이 문자의 배열은 아닙니다. 따라서 String을 사용하기 위해서는 우선 String타입의 객체를 생성해야합니다. 다음 짧은 예제에는 몇가지 흔하게 사용되는 String 생성 방법들을 모아봤습니다. 참고로 String은 러스트의 “The Rust Standard  Library”(약자로 std)에 포함되기 때문에 명시적으로 지정해주지않아도 자동으로 빌드에 포함됩니다. C의 include나 파이썬의 import등과 같은 추가적인 절차없이 바로 사용할 수 있습니다. 
+메뉴얼을 자세히 볼 필요는 없지만 첫줄만 봐도 결국 하나의 구조체라는 것을 알 수 있습니다. C에서와같이 문자의 배열은 아닙니다. 따라서 String을 사용하기 위해서는 우선 String타입의 객체를 생성해야합니다. 다음 짧은 예제에는 몇가지 흔하게 사용되는 String 생성 방법들을 모아봤습니다. 참고로 String은 러스트의 “The Rust Standard  Library”(약자로 std)에 포함되기 때문에 명시적으로 지정해주지않아도 자동으로 빌드에 포함됩니다. C의 include나 파이썬의 import등과 같은 추가적인 절차없이 바로 사용할 수 있습니다.
 
 String을 사용하는 몇가지 방식들에 대한 예제를 보면서 이야기하겠습니다.
 
@@ -808,6 +812,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 gkim@gkim-laptop:~/study/my-rust-book$ cargo run --bin string
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -848,7 +853,7 @@ pub struct String {
 }
 ```
 
-출처: https://doc.rust-lang.org/src/alloc/string.rs.html#365
+출처: <https://doc.rust-lang.org/src/alloc/string.rs.html#365>
 
 고급 언어를 다뤄봤다면 반드시 사용해봤을만한 벡터가 나타났습니다. 벡터는 기본적으로 배열이지만, 데이터의 크기가 동적으로 커지거나 작아질 수 있는 기능을 추가한 타입입니다. 배열은 생성시에 지정된 크기만을 갖지만 벡터를 사용하면 데이터를 추가하면 추가하는만큼 데이터의 크기가 커지고, 데이터를 지우면 지워진만큼 크기가 작아집니다. 벡터에 대한 보다 자세한 설명은 다음 장에 이야기하겠습니다.
 
@@ -1011,11 +1016,11 @@ nth메소드는 Option이라는 Enums를 반환하므로 이 Enums에서 최종 
 
 러스트는 컴파일러가 프로그램 코드를 컴파일 할 때 모든 메모리의 소유권을 추적합니다. 러스트가 정한 규칙에 어긋나게 메모리에 접근하는 코드가 있으면 친절한 안내 메세지를 출력하고 더 이상 컴파일을 하지 않습니다. 그래서 러스트 코드의 컴파일 시간이 오래걸린다는 불평이 많습니다. 수십 ~ 수백줄의 간단한 코드도 몇 초정도 시간이 걸리는걸 보면서 좀 답답할 때도 있긴합니다. (하지만 그정도의 간단한 코드를 만드는데 컴파일하고 고치고 다시 컴파일하는 과정을 여러번 반복해야할 정도로 컴파일 에러를 많이 만들고 있다는 것은 개발자에게도 문제가 있는게 아닌가 생각됩니다.) 하지만 빌드를 여러번 할 필요도 없는게 VSCODE등 대부분의 개발툴에서 러스트 언어를 동적으로 분석해주고, 코드를 쓸 때마다 에러 체크를 해줍니다. 빌드하기전에 미리 모든 컴파일 에러를 고칠 수 있습니다. 또 "cargo check"같은 명령을 사용하면 컴파일 에러가 있는지 확인하는 시간을 줄일 수 있습니다.
 
-VSCODE를 예를 들면 Inlay hints https://code.visualstudio.com/docs/languages/rust#_inlay-hints 나 Linting https://code.visualstudio.com/docs/languages/rust#_linting 등의 기능이 있어서, cargo를 호출하기전에 코드를 쓰는 단계에서 미리 거의 모든 컴파일 에러를 잡을 수 있습니다.
+VSCODE를 예를 들면 Inlay hints <https://code.visualstudio.com/docs/languages/rust#_inlay-hints> 나 Linting <https://code.visualstudio.com/docs/languages/rust#_linting> 등의 기능이 있어서, cargo를 호출하기전에 코드를 쓰는 단계에서 미리 거의 모든 컴파일 에러를 잡을 수 있습니다.
 
 또한 러스트 언어는 한번 빌드가 되고나면 좀처럼 메모리 관련 에러는 발생하지 않습니다. 기타 로우레벨 언어들로 만든 코드들이 빌드되서 실행은 되더라도 오랜 시간동안 에러가 없는지 검증해야되고, 정적 분석 툴 등을 돌려야 되는 시간들을 생각해보면 전체적인 개발 시간은 확실히 줄어드는 것이라 생각합니다.
 
-The Rust Programming Language(https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html)에서는 소유권이라는 것이 3가지 규칙을 의미한다고 설명합니다.
+The Rust Programming Language(<https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html>)에서는 소유권이라는 것이 3가지 규칙을 의미한다고 설명합니다.
 
 - Each value in Rust has an *owner*.
 - There can only be one owner at a time.
@@ -1104,7 +1109,7 @@ fn internal_scope() {
 
 함수 시작 부분에서 생성된 hello_string이라는 변수는 함수가 끝나는 }를 만나면서 해지됩니다. 함수의 스코프가 끝나는 }에서 함수가 소용했던 hello_string이라는 변수가 해지되는 것입니다. "hello"가 저장되어있는 메모리가 해지되고, hello_string이라는 변수를 더 이상 사용할 수 없게 되는 것입니다.
 
-hello_string이라는 변수는 _internal_scope함수가 소유하고, 따라서 스코프는 _internal_scope함수가 끝날 때까지 입니다. world_string이라는 변수의 소유권은 _internal_scope함수안에 새로 만들어진 블럭에 있습니다. 그 새로운 블럭의 시작 지점은 두번째 {이고 끝 지점은 첫번째 }가 있는 곳입니다. 따라서 아래와같이 world_string을 소유한 블럭 밖에서 world_string을 사용할 수가 없습니다.
+hello_string이라는 변수는 \_internal_scope함수가 소유하고, 따라서 스코프는 \_internal_scope함수가 끝날 때까지 입니다. world_string이라는 변수의 소유권은 \_internal_scope함수안에 새로 만들어진 블럭에 있습니다. 그 새로운 블럭의 시작 지점은 두번째 {이고 끝 지점은 첫번째 }가 있는 곳입니다. 따라서 아래와같이 world_string을 소유한 블럭 밖에서 world_string을 사용할 수가 없습니다.
 
 ```rust
 fn internal_scope() {
@@ -1330,7 +1335,7 @@ fn main() {
 - iter(): 슬라이스 이터레이터를 만듬
 - into_iter(): 변수 값으로 이터레이터를 만듬
 
-참고: https://doc.rust-lang.org/std/iter/trait.IntoIterator.html#tymethod.into_iter
+참고: <https://doc.rust-lang.org/std/iter/trait.IntoIterator.html#tymethod.into_iter>
 
 두개가 무슨 차인지 한번 실험을 해보겠습니다. 먼저 변수의 값으로 이터레이터를 만들어보겠습니다.
 
@@ -1405,7 +1410,7 @@ Valentine
 into_iter를 사용했을 때의 에러 메세지를 보면 이런 말이 있습니다.
 
 > note: `into_iter` takes ownership of the receiver `self`, which moves `user`
-> 
+>
 
 값으로 이터레이터를 만든다는 의미는 변수의 값을 이동시킨다는 의미입니다. 즉 소유권을 가져간다는 뜻입니다. for 루프에서 c라는 변수의 타입이 String이 되고, c변수가 루프를 돌때마다 배열에 있는 객체를 하나씩 소유하게 됩니다. 그리고 루프가 끝날 때마다 스코프가 끝나고, 객체가 해지됩니다. 모든 루프가 끝나면 배열 전체가 다 해지됩니다.
 
@@ -1422,11 +1427,11 @@ into_iter를 사용했을 때의 에러 메세지를 보면 이런 말이 있습
 
 C언어에서 포인터의 배열을 만들어서 여러개의 데이터를 관리하다가 프로그램 마지막에 모든 데이터를 해지하는 패턴을 흔하게 사용합니다. 이때 루프를 돌면서 각각의 데이터를 해지하고, 마지막에 배열 자체를 해지합니다. 이럴 때 into_iter를 사용하면, 각각의 항목을 따로 해지하지않아도 각 루프의 스코프가 끝나면서 자동으로 해지됩니다. for 루프에서 만든 스코프가 끝날때 각 데이터의 스코프가 끝나기 때문입니다.
 
-참고로 iter메소드는 불변 레퍼런스를 만듭니다. for루프안에서 user데이터를 읽기만하고 쓸수는 없습니다. 만약 user데이터를 수정하고 싶다면 iter_mut 메소드를 써서 가변 레퍼런스를 만들면됩니다. iter_mut 메소드의 메뉴얼(https://doc.rust-lang.org/std/slice/struct.IterMut.html)을 참고하세요.
+참고로 iter메소드는 불변 레퍼런스를 만듭니다. for루프안에서 user데이터를 읽기만하고 쓸수는 없습니다. 만약 user데이터를 수정하고 싶다면 iter_mut 메소드를 써서 가변 레퍼런스를 만들면됩니다. iter_mut 메소드의 메뉴얼(<https://doc.rust-lang.org/std/slice/struct.IterMut.html>)을 참고하세요.
 
 ### Clone과 소유권
 
-좀전에 into_iter를 사용한 경우 컴파일 에러를 보면 user.clone().into_iter()로 고쳐보라는 에러 메세지가 있습니다. 
+좀전에 into_iter를 사용한 경우 컴파일 에러를 보면 user.clone().into_iter()로 고쳐보라는 에러 메세지가 있습니다.
 
 ```rust
 fn main() {
@@ -1495,19 +1500,19 @@ fn main() {
 
 정리를 하자면 러스트에서 원시 타입 Primitive type으로 분류된 타입들은 이동이 아니라 복사가 일어나입니다. 어떤 타입들이 원시 타입인지는 Rust의 Standard Library 메뉴얼을 참고하시기 바랍니다.
 
-https://doc.rust-lang.org/std/#primitives
+<https://doc.rust-lang.org/std/#primitives>
 
 C나 예전 C++을 사용해본 개발자라면 이렇게 생각하면 쉽습니다.
 
 >
 > malloc/new 등으로 할당하고 free로 해지해줘야되는 메모리나 객체를 자동으로 해지해주는 대신 소유권을 관리해줘야 한다. Primitive type은 복사가 일어나고 그 외는 이동이 발생한다.
-> 
+>
 
 모던 C++을 아는 개발자는 이렇게 생각하면 더 이해하기 쉬울 것입니다.
 
 >
 > RAII가 권장이 아니라 강제 사항이다. 모든 포인터는 스마트 포인터이다.
-> 
+>
 
 나중에 Copy trait라는게 나오는데, 미리 간단하게 말씀드리면 데이터 타입의 크기를 컴파일러가 알기 때문에 데이터의 이동이 아니라 복사를 해주는 데이터 타입들의 속성이라고 생각하면 됩니다. 컴파일러가 크기를 안다는 것은 Primitive type은 기본적으로 Copy trait를 구현하고 있다는 말입니다. 그 외의 타입들은 동적으로 크기가 바뀔 수도 있으므로 컴파일러가 Copy trait를 자동으로 구현해주지 못합니다. 동적으로 크기가 바뀌거나 또다른 객체를 포함하고있는 등의 데이터는 Clone을 사용해야합니다.
 
@@ -1595,7 +1600,8 @@ fn main() {
     println!("pair contains {:?} and {:?}", integer, decimal);
 }
 ```
-출처: https://doc.rust-lang.org/rust-by-example/custom_types/structs.html
+
+출처: <https://doc.rust-lang.org/rust-by-example/custom_types/structs.html>
 
 조금이라도 프로그래밍을 해보신 분들이라면 이미 잘 알고계실만한 구조체와 튜플의 모습 그대로입니다. 그나마 유닛 구조체라는게 좀 특이합니다. 아무런 내부 데이터가 없는 구조체입니다. 이건 나중에 트레이트Trait라는 클래스의 메소드와 같은 것을 사용하기 위한 구조체입니다. 클래스인데 내부 변수는 없고 메소드만 있는 클래스라고 생각할 수도 있습니다.
 
@@ -1743,6 +1749,7 @@ fn main() {
     println!("area size={} {:?}", rect.area(), rect);
 }
 ```
+
 ```bash
 $ cargo run --bin struct_method
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.31s
@@ -1753,10 +1760,9 @@ area size=0 Rectangle { top_left: Point { x: 0.0, y: 0.0 }, bottom_right: Point 
 
 new라는 이름의 메소드는 러스트의 코딩 관례상 빈 객체를 생성하는 메소드의 이름으로 많이 쓰입니다. 그래서 보통 정적 메소드로 구현됩니다.
 
-destroy라는 메소드는 인자를 self로 받아오므로 객체의 소유권을 가져옵니다. 따라서 메소드가 종료된 후부터는 객체를 더 이상 쓸 수 없습니다. new같이 특별히 정해진 이름이 있는 것은 아닙니다. 그리고 destroy와 같이 명시적으로 객체를 해지하는 메소드를 만드는건 특별한 일이 아니라면 잘 쓰지 않는 방법입니다. 
+destroy라는 메소드는 인자를 self로 받아오므로 객체의 소유권을 가져옵니다. 따라서 메소드가 종료된 후부터는 객체를 더 이상 쓸 수 없습니다. new같이 특별히 정해진 이름이 있는 것은 아닙니다. 그리고 destroy와 같이 명시적으로 객체를 해지하는 메소드를 만드는건 특별한 일이 아니라면 잘 쓰지 않는 방법입니다.
 
 메소드에서 self를 이용해서 소유권을 받아오는 것을 확인해보기위해 주석 처리된 부분을 다시 코드로 바꾸고 빌드해보겠습니다.
-
 
 ```rust
 ......
@@ -1807,7 +1813,6 @@ error: could not compile `my-rust-book` (bin "struct_method") due to 1 previous 
 
 이제는 조금 익숙해진 에러 메세지들이 보입니다.
 
-
 ### 구조체 디버깅 방법
 
 이전 예제를 보면 Point 구조체와 Rectangle 구조체의 정의 윗줄에 #[derive(Debug)]라는 코드가 있습니다.
@@ -1847,7 +1852,7 @@ destroyer
 area size=0 Rectangle { top_left: Point { x: 0.0, y: 0.0 }, bottom_right: Point { x: 0.0, y: 0.0 } }
 ```
 
-#[derive(Debug)]라는 구문은 std::fmt::Debug (Standard library에 속한 fmt라는 모듈에 정의된 Debug라는  trait)를 자동으로 구현하라는 의미입니다. 나중에 Trait에 대해서 설명할 때 정확한 의미를 알아보겠지만, 지금은 일단 “{:?}”라는 표현식을 써서 구조체의 각 필드의 값을 출력한다고 생각하면 됩니다. 구조체의 필드가 String같은 std에 정의된 타입이면 대부분 동작합니다. 만약 구조체의 한 필드가 또 다른 구조체 타입이라면, 그 다른 구조체도 #[derive(Debug)]를 선언해주면 됩니다. Rectangle에만 #[derive(Debug)]을 사용한게 아니라 Point에도 #[derive(Debug)]를 선언한 이유가 Rectangle의 디버깅 메세지를 출력할 때 Point의 디버깅 메세지도 같이 출력되어야하기 때문입니다.
+\#[derive(Debug)]라는 구문은 std::fmt::Debug (Standard library에 속한 fmt라는 모듈에 정의된 Debug라는  trait)를 자동으로 구현하라는 의미입니다. 나중에 Trait에 대해서 설명할 때 정확한 의미를 알아보겠지만, 지금은 일단 “{:?}”라는 표현식을 써서 구조체의 각 필드의 값을 출력한다고 생각하면 됩니다. 구조체의 필드가 String같은 std에 정의된 타입이면 대부분 동작합니다. 만약 구조체의 한 필드가 또 다른 구조체 타입이라면, 그 다른 구조체도 #[derive(Debug)]를 선언해주면 됩니다. Rectangle에만 #[derive(Debug)]을 사용한게 아니라 Point에도 #[derive(Debug)]를 선언한 이유가 Rectangle의 디버깅 메세지를 출력할 때 Point의 디버깅 메세지도 같이 출력되어야하기 때문입니다.
 
 ## 열거형 Enums
 
@@ -1957,6 +1962,7 @@ fn main() {
     let tomorrow: WEEK = 1; // compile error!!!
 ......
 ```
+
 ```bash
 $ cargo run --bin enum_basic
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -1991,6 +1997,7 @@ WEEK타입의 변수에 WEEK타입이 아닌 정수값을 저장할 수 없으�
     }
 ......
 ```
+
 ```bash
 $ cargo run --bin enum_basic
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -2090,7 +2097,8 @@ enum Result<T, E> {
    Err(E),
 }
 ```
-출처: https://doc.rust-lang.org/std/result/
+
+출처: <https://doc.rust-lang.org/std/result/>
 
 Result는 프로그램 실행 중 발생한 에러를 표현하는 타입입니다. 그 중 가장 대표적인 예가 함수의 반환값입니다.  Result에는 2개의 타입이 존재합니다. (영어로는 variant라고 부르지만 이 책에서는 타입이라고 부르겠습니다.) Ok는 함수가 동적에 성공했을 때, 함수가 반환하는 값을 내장하는 타입이고, Err는 함수가 실패했음을 나타내는 값을 내장하는 타입입니다. 함수의 실패를 나타내는 에러메세지가 될 수도 있고, 에러 상태를 나타내는 데이터가 될 수도 있겠지요.
 
@@ -2124,7 +2132,7 @@ Error: denominator cannot be zero
 
 divide함수는 나눗셈이 정상적으로 처리되었으면 Ok안에 결과 값을 전달하고, 나눗셈을 실행할 수 없는 에러 상황을 만나면 Err타입에 에러 메세지를 넣어서 전달합니다. main함수는 반환값의 타입을 보고, divide함수가 반환한 값이 정상적인 결과인지 문제가 발생한 상황인지를 알 수 있습니다. 타입을 확인하는 것은 패턴 매칭을 이용하면 항상 모든 에러 값을 놓치지 않고 처리할 수 있습니다. 여기서 패턴 매칭의 편리함과 강력함을 다시 느끼게 됩니다.
 
-사실 C/C++언어에서 포인터를 반환하는 함수들이 에러 상황에 NULL (사실은 정수 0을 다른 이름으로 바꾸기만 한 것)을 반환하는게 보통인데 이게 에러 상황인 것은 나타낼 수 있지만, 왜 에러가 발생했는지를 표현할 수도없고, 실수하기도 쉬운 불편한 방식이었습니다. NULL이라는 개념을 처음 만들었다는 Tony Hoare님의 후회한다고(https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/) 이야기한 것도 그렇고 모던C++ (C++ 17)에서 optional, expected 등을 도입하는 것 등을 보면 Result를 잘 활용하는 것이 얼마나 프로그램의 안정성에 필수적인지 알 수 있습니다.
+사실 C/C++언어에서 포인터를 반환하는 함수들이 에러 상황에 NULL (사실은 정수 0을 다른 이름으로 바꾸기만 한 것)을 반환하는게 보통인데 이게 에러 상황인 것은 나타낼 수 있지만, 왜 에러가 발생했는지를 표현할 수도없고, 실수하기도 쉬운 불편한 방식이었습니다. NULL이라는 개념을 처음 만들었다는 Tony Hoare님의 후회한다고(<https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/>) 이야기한 것도 그렇고 모던C++ (C++ 17)에서 optional, expected 등을 도입하는 것 등을 보면 Result를 잘 활용하는 것이 얼마나 프로그램의 안정성에 필수적인지 알 수 있습니다.
 
 반드시 반환값을 갖는 함수는 최대한 전부 Result타입으로 반환하도록 작성하려고 노력해보세요. 참고로 Result에서는 한가지 타입의 에러만 반환할 수 있습니다. divide함수에서 반환할 수 있는 에러는 String타입 뿐입니다. 만약에 좀더 긴 함수를 작성하고있고, 이 함수가 몇가지 라이브러리를 호출하는데, 각 라이브러리마다 반환하는 에러의 타입이 다르다면 어떻게 해야할까요? 각 라이브러리마다 자신의 에러를 표현하기 위한 구조체를 만들어서 사용한다면, 모든 에러 값들을 하나의 타입으로 또다시 바꿔야할까요? 뒤에나올 trait라는 것을 사용해서 다양한 에러 타입들을 하나의 타입으로 표현할 수 있습니다. 지금은 어떤 상황에서도 Result를 사용할 수 있다는 것만 기억하시기 바랍니다.
 
@@ -2149,6 +2157,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin result_noreturn
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -2172,7 +2181,8 @@ enum Option<T> {
 }
 
 ```
-출처: https://doc.rust-lang.org/std/option/enum.Option.html
+
+출처: <https://doc.rust-lang.org/std/option/enum.Option.html>
 
 값이 있을 때는 Some타입 안에 존재하는 값을 저장하고, 값이 없을 때는 None으로 표현합니다. 가장 많이 사용하는 경우가 함수 반환 값을 Option으로 반환하는 것입니다. Result와 마찬가지로 되도록 모든 함수의 반환값을 Option으로 처리할 수 있도록 노력해야합니다.
 
@@ -2228,6 +2238,7 @@ fn main() {
     println!("This line is not reachable because item is {}", item);
 }
 ```
+
 ```bash
 $ cargo run --bin option_enum
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -2244,6 +2255,7 @@ thread 'main' panicked at src/option_enum/main.rs:46:18:
 An argument of second should not be empty
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
+
 사용법 자체는 크게 어렵지 않습니다. 패턴 매칭을 사용해서 결과 값을 확인하는 것도 Result에서 해본 방식입니다. 패턴 매칭을 해서 Some타입이면 내부 데이터를 꺼내서 사용하면 됩니다. 만약에 None이면 아무런 데이터도 없는 것이므로, 데이터가 없는 경우에 대한 처리를 하면 됩니다.
 
 ```rust
@@ -2281,7 +2293,7 @@ x는 Some타입이면서 5라는 값을 내장하고 있습니다. 그러므로 
     }
 ```
 
-x는 값이 있을때만을 처리할 때 사용합니다. 값이 없다면 무시합니다. y는 값이 들어있다면 그 값을 출력하고, 없다면 값이 없다는 메세지를 출력합니다. if let 구문에서 Some안에 있는 값을 n으로 표시하게되므로 내부 스코프에서 n은 i32타입입니다. n이라는 변수는 언제나 반드시 어떠한 값을 가집니다. 또다시 None인지 확인할 필요가 없이 확실하게 데이터를 가지는 변수가 됩니다. 
+x는 값이 있을때만을 처리할 때 사용합니다. 값이 없다면 무시합니다. y는 값이 들어있다면 그 값을 출력하고, 없다면 값이 없다는 메세지를 출력합니다. if let 구문에서 Some안에 있는 값을 n으로 표시하게되므로 내부 스코프에서 n은 i32타입입니다. n이라는 변수는 언제나 반드시 어떠한 값을 가집니다. 또다시 None인지 확인할 필요가 없이 확실하게 데이터를 가지는 변수가 됩니다.
 
 ### Option이 제공하는 메소드들
 
@@ -2315,7 +2327,7 @@ println!("y is {}", y.unwrap_or_default());
 
 i32타입의 디폴트 값은 0입니다. 따라서 “y is 0”이라는 메세지가 출력됩니다.
 
-그리고 unwrap보다 더 권장되는 방식이  expect메소드입니다. 
+그리고 unwrap보다 더 권장되는 방식이  expect메소드입니다.
 
 ```rust
 let x: Option<i32> = Some(5);
@@ -2410,6 +2422,7 @@ fn main() {
     }
 }
 ```
+
 ```bash
 $ cargo run --bin try_operator
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -2485,6 +2498,7 @@ fn main() {
     fizzbuzz_fn(|x| x % 3 == 0, |y| y % 5 == 0);
 }
 ```
+
 ```bash
 $ cargo run --bin function_pointer
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -2513,7 +2527,7 @@ int (*변수이름)(int)
 
 위와 같이 사용하는데 함수 포인터라는 타입이 있지만, int나 char처럼 함수 포인터를 가르키는 타입 이름이 없다는 것을 알 수 있습니다.
 
-러스트에서는 명확하게 fn이라는 타입 이름을 붙여서 사용합니다. 
+러스트에서는 명확하게 fn이라는 타입 이름을 붙여서 사용합니다.
 
 ### 클로저
 
@@ -2539,7 +2553,6 @@ fn main() {
 
 다른 언어에서 클로저를 사용하는 것과 아주 유사합니다. |와 |사이에 클로저의 인자를 넣고, 그 다음에 클로저의 실행 코드를 적으면 됩니다. 그리고 예제에서와 같이 클로저를 다른 함수의 인자로 전달할 수도 있습니다. fn이라는 키워드가 함수 포인터를 위한 키워드일뿐 아니라 클로저를 위한 키워드도 된다는 것을 알 수 있습니다.
 
-
 ### 다른 변수를 참조할 수 있는 Fn와 FnMut
 
 위의 예제에서 사용한 클로저들은 클로저의 외부 변수를 사용하지 않았습니다. 인자로 받은 변수 x와 y만을 사용했습니다. 그럼 다음과 같이 외부 변수를 사용해야하는 경우는 어떨까요?
@@ -2563,6 +2576,7 @@ fn main() {
     fizzbuzz_fn(|x| x % fizz == 0, |y| y % buzz == 0);
 }
 ```
+
 ```bash
 t$ cargo run --bin closure
    Compiling my-rust-book v0.1.0 (/home/gkim/study/my-rust-book)
@@ -2633,6 +2647,7 @@ fn main() {
     fizzbuzz_fn(|x| x % fizz == 0, |y| y % buzz == 0);
 }
 ```
+
 ```bash
 $ cargo run --bin closure
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.29s
@@ -2657,7 +2672,7 @@ fn이라는 타입이 아니라 Fn이라는 타입을 사용했습니다. Fn 타
 
 ## map 메소드
 
-클로저를 사용하는 방법중에 가장 많이 사용하게 되는게 이터레이터의 map 메소드와 같이 사용하는 경우입니다. 배열이나 백터의 이터레이터를 만들고, 이레이터의 map 메소드에 클로저를 사용하는 것입니다. 그리고 Option의 map 메소드와 사용하는 것도 자주 사용되는 방식이니까 이 두가지 경우를 이야기해보려고 합니다. 
+클로저를 사용하는 방법중에 가장 많이 사용하게 되는게 이터레이터의 map 메소드와 같이 사용하는 경우입니다. 배열이나 백터의 이터레이터를 만들고, 이레이터의 map 메소드에 클로저를 사용하는 것입니다. 그리고 Option의 map 메소드와 사용하는 것도 자주 사용되는 방식이니까 이 두가지 경우를 이야기해보려고 합니다.
 
 ### 이터레이터의 map 메소드 사용 방법
 
@@ -2697,6 +2712,7 @@ fn main() {
     fizzbuzz_3(41);
 }
 ```
+
 ```bash
 $ cargo run --bin map
    Compiling my-rust-book v0.1.0 (/Users/user/study/my-rust-book)
@@ -2748,7 +2764,7 @@ fizzbuzz_2함수는 이전에 match에 대한 설명을 위해서 만들어본 �
 collect::<Vec<String>>()
 ```
 
-<Vec<String>> 부분이 바로 반환값의 타입을 지정하는 부분입니다. collect라는 메소드는 대부분 벡터를 반환하겠지만, 그 벡터안에 무엇이 들어가야될지는 모릅니다. 개발자가 이렇게 코드레벨에서 직접 지정을 해주어야 벡터안에 들어갈 데이터의 타입에 맞게 실행할 수 있습니다. 가끔은 컴파일러가 자동으로 벡터에 들어가는 데이터의 타입을 추론할 수도 있습니다. 그래서 타입을 지정하지 않아도 빌드가 될 때도 있습니다. 하지만 타입을 지정해주어야하는 경우가 더 많습니다.
+`<Vec<String>>` 부분이 바로 반환값의 타입을 지정하는 부분입니다. collect라는 메소드는 대부분 벡터를 반환하겠지만, 그 벡터안에 무엇이 들어가야될지는 모릅니다. 개발자가 이렇게 코드레벨에서 직접 지정을 해주어야 벡터안에 들어갈 데이터의 타입에 맞게 실행할 수 있습니다. 가끔은 컴파일러가 자동으로 벡터에 들어가는 데이터의 타입을 추론할 수도 있습니다. 그래서 타입을 지정하지 않아도 빌드가 될 때도 있습니다. 하지만 타입을 지정해주어야하는 경우가 더 많습니다.
 
 러스트 언어의 매뉴얼에는 다음과 같은 예제 코드가 있습니다.
 
@@ -2762,7 +2778,8 @@ assert_eq!(iter.next(), Some(4));
 assert_eq!(iter.next(), Some(6));
 assert_eq!(iter.next(), None);
 ```
-https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map
+
+<https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map>
 
 참고로 assert_eq!는 2개의 인자를 받아서 서로 같지 않으면 프로그램을 종료시키는 매크로입니다. 1, 2, 3이 들어있는 벡터의 이터레이터를 만든 후 map 메소드를 실행한 결과값을 iter라는 변수에 저장했습니다. iter라는 변수가 처음 만들어졌을때는 아직 클로저를 실행하지 않은 것입니다. 하지만 최초로 이터레이터의 next 메소드가 호출되었을 때야 처음으로 1을 클로저에 전달해서 Some(2)라는 값을 얻게 됩니다. 그리고 다음 next 메소드가 호출될때 각각 2와 3을 클로저에 전달해서 Some(4)와 Some(6)이라는 값을 얻게 됩니다. 그리고 마지막으로 이터레이터에 남은 데이터가 없으면 클로저가 실행되지 못하고, 반환값도 None을 반환합니다.
 
@@ -2787,6 +2804,7 @@ fn main() {
     println!("Double None: {:?}", double_none); // Double None: None
 }
 ```
+
 ```bash
 $ cargo run --bin map_option
    Finished dev [unoptimized + debuginfo] target(s) in 0.40s
@@ -2825,6 +2843,7 @@ fn main() {
     println!("Double Error: {:?}", double_error); // Double Error: Error
 }
 ```
+
 ```bash
 $ cargo run --bin map_result
     Finished dev [unoptimized + debuginfo] target(s) in 0.00s
@@ -2848,7 +2867,8 @@ let maybe_some_len = maybe_some_string.map(|s| s.len());
 assert_eq!(maybe_some_len, Some(13));
 //println!("{:?}", maybe_some_string); // error
 ```
-출처: https://doc.rust-lang.org/std/option/enum.Option.html#method.map
+
+출처: <https://doc.rust-lang.org/std/option/enum.Option.html#method.map>
 
 maybe_some_string은 소비consume되어버렸으니 map연산을 호출한 이후에는 다시 사용할 수 없는 변수가 됩니다. 마지막줄에서 maybe_some_string의 값을 확인해보려고한다면 빌드 에러가 발생합니다.  map 메소드는 Some(x)에 들어있는 값을 해지하고 Some(y)라는 새로운 값으로 바꾸고 이전 값은 다시 사용할 필요가 없을 때 사용합니다. maybe_some_string이라는 객체가 더 이상 필요하지 않으면 괜찮지만 만약 계속 써야하는 데이터라면 객체가 해지되지 않도록 해야합니다.
 
@@ -2874,7 +2894,7 @@ error[E0382]: borrow of moved value: `maybe_some_string`
      |                      ^^^^^^^^^^^^^^^^^ value borrowed here after move
 ```
 
-중간에보면 as_ref이나 as_mut 메소드를 호출해서 객체의 레퍼런스를 만든 후에 map 메소드를 호출하라고 알려줍니다. as_ref는 &Option<T> (Option의 내부에 T타입의 데이터가 저장된 enum타입을 의미합니다. C++의 템플릿이라고 생각하면 이해가 쉬울 수 있습니다.)을 Option<&T>으로 바꾸는 일을 합니다.
+중간에보면 as_ref이나 as_mut 메소드를 호출해서 객체의 레퍼런스를 만든 후에 map 메소드를 호출하라고 알려줍니다. as_ref는 `&Option<T>` (Option의 내부에 T타입의 데이터가 저장된 enum타입을 의미합니다. C++의 템플릿이라고 생각하면 이해가 쉬울 수 있습니다.)을 `Option<&T>`으로 바꾸는 일을 합니다.
 
 일단 한번 고쳐서 실행해보겠습니다.
 
@@ -2884,11 +2904,13 @@ let maybe_some_len = maybe_some_string.as_ref().map(|s| s.len());
 assert_eq!(maybe_some_len, Some(13));
 println!("{:?}", maybe_some_string);
 ```
+
 ```bash
 Some("Hello, World!")
 ```
 
 우리 눈에 직접적으로 보이지 않지만 다음과 같은 타입 변화가 일어나는 것입니다.
+
 1. Some(String<"Hello, World!">)가 &Some(String<"Hello, World!">)로 바뀜
 2. &Some(String<"Hello, World!">)가 Some(&String<"Hello, World!">)로 바뀜
 3. 결국 map 내부의 인자 s는 &String<"Hello, World!">가 됨
@@ -2904,6 +2926,7 @@ let mut maybe_some_string = Some(String::from("Hello, World!"));
 maybe_some_string.as_mut().map(|s| s.push_str(" Again!"));
 println!("{:?}", maybe_some_string);
 ```
+
 ```bash
 Some("Hello, World! Again!")
 ```
@@ -2924,13 +2947,14 @@ fn main() {
     maybe_some_string.as_mut().map(|s| println!("{:p}", s));
 }
 ```
+
 ```bash
 0x7ffc8810d420
 0x7ffc8810d420
 0x7ffc8810d420
 ```
 
-첫번째로 Some<String>타입을 가지는 maybe_some_string가 메모리 어디에 존재하는지를 확인해봤습니다. 메모리 주소를 보니 main함수의 스택입니다. 그리고 as_ref/as_mut메소드와 map메소드를 통해 Some안에 있는 String객체의 포인터를 확인해보니 같은 주소가 나왔습니다. 우리는 이것으로 2가지를 확인할 수 있습니다.
+첫번째로 `Some<String>`타입을 가지는 maybe_some_string가 메모리 어디에 존재하는지를 확인해봤습니다. 메모리 주소를 보니 main함수의 스택입니다. 그리고 as_ref/as_mut메소드와 map메소드를 통해 Some안에 있는 String객체의 포인터를 확인해보니 같은 주소가 나왔습니다. 우리는 이것으로 2가지를 확인할 수 있습니다.
 
 1. Some타입의 변수의 시작 주소와 String타입 객체의 시작 주소가 같습니다. 이것으로 우리는 Option이나 Result등의 타입은 실제로 메모리에 저장되는 데이터가 아니라는 것을 알 수 있습니다. enum타입은 컴파일러가 자체적으로 관리하는 가상의 타입입니다. 어느 변수가 Some타입으로 감싸여있다고하는 것은 실제로는 컴파일러가 그렇게 Some타입이 있는 것 같이 관리를 한다는 의미이지, 실제로 메모리에 Some이라는 객체가 존재하고 그 안에 다른 데이터가 존재하는 것은 아닙니다. 이것이 러스트 언어가 Zero Cost Abstraction (추가적인 성능 감소나 메모리 사용없이 추상화된 계층을 제공한다는 의미입니다)를 제공한다고 말하는 이유입니다. 지금 초급 단계에서 깊게 이야기할 수는 없지만, 다른 언어에 비해 러스트 컴파일러가 하는 일이 많다고 생각하셔도 좋습니다.
 2. 가변 레퍼런스나 불편 레퍼런스나 사실상 포인터 주소는 같습니다. 즉 이 메모리 주소를 읽기용으로만 써야할지 데이터를 바꿀 수도 있는지는 관리하는 것도 컴파일러입니다. 마찬가지로 성능 감소나 메모리 사용없이 컴파일러가 제공해주는 기능인 것입니다.
@@ -2962,7 +2986,7 @@ map은 Ok나 Some타입의 메소드로 호출되어서 Ok나 Some타입을 반�
 
 ### 크레이트(Crate)와 패키지(Package)
 
-러스트 컴파일러(rustc)가 한번에 처리하는 코드를 크레이트라고 정의한다고 합니다. (출처: https://doc.rust-lang.org/book/ch07-01-packages-and-crates.html) 사실 정의만 보면 잘 이해가 안되는데 쉽게 말해서 지금 내가 만들고있는게 하나의 실행 파일이나, 하나의 라이브러리이면 각각이 바로 하나의 크레이트입니다.
+러스트 컴파일러(rustc)가 한번에 처리하는 코드를 크레이트라고 정의한다고 합니다. (출처: <https://doc.rust-lang.org/book/ch07-01-packages-and-crates.html>) 사실 정의만 보면 잘 이해가 안되는데 쉽게 말해서 지금 내가 만들고있는게 하나의 실행 파일이나, 하나의 라이브러리이면 각각이 바로 하나의 크레이트입니다.
 
 우리는 지금까지 하나의 실행파일이 생성되는 예제들을 만들었습니다. 그럼 지금까지 하나의 크레이트를 만들었다는 것입니다.바이너리 크레이트( Binary crate)는 말 그대로 실행 파일 하나를 만드는 코드입니다. 라이브러리 크레이트(Library crate)는 라이브러리를 만들기 위한 코드입니다. 코드가 파일 하나에만 있던지 여러개에 있던지는 상관없습니다. 여러 코드 파일들이 하나의 결과물을 만들면, 모든 파일이 하나의 크레이트를 구현하는 것입니다.
 
@@ -2970,13 +2994,13 @@ map은 Ok나 Some타입의 메소드로 호출되어서 Ok나 Some타입을 반�
 
 그런데 왜 패키지일까요? 예제 프로그램만 만들다보면 다른 라이브러리를 사용할 일이 없었을 것입니다. 그럼 하나의 크레이트만 있는 패키지를 만드신 것입니다. 그리고 그 하나의 크레이트가 하나의 패키지입니다. Cargo.toml파일의 [dependendies] 섹션에 외부 라이브러리를 추가하게되면, 하나의 바이너리 크레이트와 여러개의 외부 라이브러리 크레이트로 이루어진 패키지를 만들게되는 것입니다. 당연히 여러개의 바이너리를 하나의 Cargo.toml에서 빌드할 수 있습니다. 그럼 여러개의 라이브러리 크레이트와 여러개의 바이너리 크레이트로 구성된 패키지를 만드는 것입니다.
 
-이전에 Cargo를 사용해서 패키지 디렉토리를 생성하는 방법을 이야기했었습니다. cargo new <package-name> 명령을 사용하면 된다고 이야기했었는데요 사실은 —bin옵션을 생략한 것입니다.
+이전에 Cargo를 사용해서 패키지 디렉토리를 생성하는 방법을 이야기했었습니다. cargo new &lt;package-name&gt; 명령을 사용하면 된다고 이야기했었는데요 사실은 —bin옵션을 생략한 것입니다.
 
 ```bash
 $ cargo new mybin --bin
      Created binary (application) `mybin` package
 $ ls -R mybin
-Cargo.toml	src
+Cargo.toml  src
 
 mybin/src:
 main.rs
@@ -2990,7 +3014,7 @@ main.rs
 $ cargo new mylib --lib
      Created library `mylib` package
 $ ls -R mylib
-Cargo.toml	src
+Cargo.toml  src
 
 mylib/src:
 lib.rs
@@ -3112,6 +3136,7 @@ fn main() {
     second_mod::sec_mod_file::second_module();
 }
 ```
+
 ```bash
 $ cargo run --bin project
     Finished dev [unoptimized + debuginfo] target(s) in 0.16s

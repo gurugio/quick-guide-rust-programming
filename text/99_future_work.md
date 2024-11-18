@@ -1,12 +1,10 @@
-
-
 Anyhow
 
 anyhow
 
 clap: command line argument parser
 
-- https://rust-cli.github.io/book/index.html
+- <https://rust-cli.github.io/book/index.html>
 
 serde: derive(Serialize, Deserialize)
 
@@ -17,6 +15,7 @@ async + http server with Tokio
 # 쓰레드간 공유 메모리 Rc와 Arc - WIP
 
 # 스마트 포인터 Box - WIP
+
 ```rust
 #[derive(Debug)]
 struct Book {
