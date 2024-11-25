@@ -52,14 +52,16 @@ impl GenSerialData for ProductID {
     }
 }
 
-fn collect_data(items: &mut Vec<Box<dyn GenSerialData>>) {
+//fn collect_data(items: &mut Vec<Box<dyn GenSerialData>>) { // If you want to use Vec<Box<dyn GenSerialData>> in main function
+fn collect_data(items: &mut [Box<dyn GenSerialData>]) {
     for item in items.iter_mut() {
         item.get_input();
     }
 }
 
 // &[&dyn GenSerialData] is wrong!
-fn generate_serial(items: &Vec<Box<dyn GenSerialData>>) -> String {
+//fn generate_serial(items: &Vec<Box<dyn GenSerialData>>) -> String { // If you want to use Vec<Box<dyn GenSerialData>> in main function
+fn generate_serial(items: &[Box<dyn GenSerialData>]) -> String {
     let mut data = String::new();
     for item in items.iter() {
         data.push_str(item.generate().unwrap());

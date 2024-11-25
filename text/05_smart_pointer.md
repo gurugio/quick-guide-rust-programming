@@ -414,14 +414,16 @@ impl GenSerialData for ProductID {
     }
 }
 
-fn collect_data(items: &mut Vec<Box<dyn GenSerialData>>) {
+//fn collect_data(items: &mut Vec<Box<dyn GenSerialData>>) { // If you want to use Vec<Box<dyn GenSerialData>> in main function
+fn collect_data(items: &mut [Box<dyn GenSerialData>]) {
     for item in items.iter_mut() {
         item.get_input();
     }
 }
 
 // &[&dyn GenSerialData] is wrong!
-fn generate_serial(items: &Vec<Box<dyn GenSerialData>>) -> String {
+//fn generate_serial(items: &Vec<Box<dyn GenSerialData>>) -> String { // If you want to use Vec<Box<dyn GenSerialData>> in main function
+fn generate_serial(items: &[Box<dyn GenSerialData>]) -> String {
     let mut data = String::new();
     for item in items.iter() {
         data.push_str(item.generate().unwrap());
@@ -470,9 +472,9 @@ fn generate_serial(items: &[&dyn GenSerialData]) -> String {
 배열을 사용했던 모든 함수 인자와 items 변수 선언 부분을 Box로 바꿨습니다.
 
 ```rust
-fn collect_data(items: &mut Vec<Box<dyn GenSerialData>>) {
+fn collect_data(items: &mut [Box<dyn GenSerialData>]) {
 ...
-fn generate_serial(items: &Vec<Box<dyn GenSerialData>>) -> String {
+fn generate_serial(items: &[Box<dyn GenSerialData>]) -> String {
 ...
     let mut items: [Box<dyn GenSerialData>; 2] = [Box::new(userid), Box::new(productid)];
 ```
@@ -480,6 +482,10 @@ fn generate_serial(items: &Vec<Box<dyn GenSerialData>>) -> String {
 그리고 items을 배열이 아니라 벡터로 사용하고 싶다면 아래와 같이 벡터를 사용할 수도 있습니다.
 
 ```rust
+fn collect_data(items: &mut Vec<Box<dyn GenSerialData>>) { // If you want to use Vec<Box<dyn GenSerialData>> in main function
+...
+fn generate_serial(items: &Vec<Box<dyn GenSerialData>>) -> String { // If you want to use Vec<Box<dyn GenSerialData>> in main function
+...
     let mut items: Vec<Box<dyn GenSerialData>> = vec![Box::new(userid), Box::new(productid)];
 ```
 

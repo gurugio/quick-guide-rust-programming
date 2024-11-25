@@ -39,3 +39,60 @@ fn main() {
 
     //print_info(&book);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct Painting {
+        title: String,
+        author: String,
+        published: i32,
+    }
+
+    /* Solution for Exercise1
+    impl Clone for Painting {
+        fn clone(&self) -> Self {
+            Painting {
+                title: self.title.clone(),
+                author: self.author.clone(),
+                published: self.published,
+            }
+        }
+    }*/
+
+    fn show_painting_to_seoul(mypainting: Painting) {
+        let newname = mypainting.title + " in Seoul";
+        println!("Dear Seoul, See my new painting! {}", newname);
+    }
+
+    fn show_painting_to_newyork(mypainting: Painting) {
+        let newname = mypainting.title + " in New York";
+        println!("Dear New York, See my new painting! {}", newname);
+    }
+
+    fn show_painting_to_london(mypainting: Painting) {
+        let newname = mypainting.title + " in London";
+        println!("Dear London, See my new painting! {}", newname);
+    }
+
+    #[test]
+    fn test_trait_clone() {
+        let mypainting = Painting {
+            title: "My Starry Night".to_owned(),
+            author: "Vencent Gauguin".to_owned(),
+            published: 2024,
+        };
+
+        /* Fix build errors */
+        show_painting_to_seoul(mypainting);
+        // Exercise1 // show_painting_to_newyork(mypainting);
+        // Exercise1 // show_painting_to_london(mypainting);
+
+        /* Solution for Exercise1
+        show_painting_to_seoul(mypainting.clone());
+        show_painting_to_newyork(mypainting.clone());
+        show_painting_to_london(mypainting.clone());
+         */
+    }
+}
