@@ -110,9 +110,9 @@ int (*변수이름)(int)
 
 러스트에서는 명확하게 fn이라는 타입 이름을 붙여서 사용합니다.
 
-### 클로저
+### WIP 클로저
 
-============ 일단 클로저를 먼저 간략하게라도 소개하겠습니다. ===================
+============ 클로저를 소개 추가 ===================
 
 위의 예제에서 다음과 같이 클로저를 사용하는 것도 볼 수 있습니다.
 
@@ -438,6 +438,55 @@ Double Error: Err("denominator cannot be zero")
 ```
 
 하는 일도 거의 동일합니다. 값이 있는 경우, 즉 Ok 타입인 경우에는 그 안의 값을 꺼내서 전달받은 클로저를 호출합니다. 만약 값이 Err 타입인 경우에는 아무일도 하지 않고, 자기 자신을 반환합니다. if let이나 match 패턴은 클로저로 처리할 수 없을만큼 코드가 길때 사용하고, 코드가 간단하다면 map을 사용하는게 더 좋겠지요.
+
+
+### WIP map 메소드를 사용하면서 디버깅하는 방법
+
+1. inspect()
+```
+fn fizzbuzz_3(max: i32) {
+    let ret = (1..=max)
+        .into_iter()
+        .map(|i| match (i % 3, i % 5) {
+            (0, 0) => format!("{} - FizzBuzz\n", i),
+            (0, _) => format!("{} - Fizz\n", i),
+            (_, 0) => format!("{} - Buzz\n", i),
+            (_, _) => "".to_string(),
+        })
+        .collect::<Vec<String>>()
+        .join("");
+}
+```
+2. 여러단계를 하나씩 쪼개기
+```rust
+fn fizzbuzz_3(max: i32) {
+    let ret = (1..=max)
+        .into_iter()
+        .map(|i| match (i % 3, i % 5) {
+            (0, 0) => format!("{} - FizzBuzz\n", i),
+            (0, _) => format!("{} - Fizz\n", i),
+            (_, 0) => format!("{} - Buzz\n", i),
+            (_, _) => "".to_string(),
+        })
+        .inspect(|x| println("map returns {}", x))
+        .collect::<Vec<String>>()
+        .join("");
+}
+
+let ret = (1..=max)
+println!("{:?}", ret);
+let ret = ret.into_iter()
+        .map(|i| match (i % 3, i % 5) {
+            (0, 0) => format!("{} - FizzBuzz\n", i),
+            (0, _) => format!("{} - Fizz\n", i),
+            (_, 0) => format!("{} - Buzz\n", i),
+            (_, _) => "".to_string(),
+        })
+print("{:?}", ret);
+ret.join("");
+print("{:?}", ret);
+```
+
 
 ## Option과 Result를 러스트 스타일에 맞게 사용하는 방법
 
