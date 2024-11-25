@@ -64,3 +64,47 @@ fn main() {
     print_info(&person);
     print_info(&book);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct Painting {
+        title: String,
+        author: String,
+        published: i32,
+    }
+
+    /* Solution
+     struct Painting {
+         title: String,
+         author: String,
+         published: u32,
+     }
+
+    impl Printable for Painting {
+         type Age = u32;
+         fn print(&self) {
+             println!(
+                 "Title: {}\nAuthor: {}\nPublished: {}",
+                 self.title,
+                 self.author,
+                 self.get_age()
+             );
+         }
+         fn get_age(&self) -> Self::Age {
+             self.published
+         }
+     }
+     */
+
+    #[test]
+    fn test_trait_printable() {
+        let mypainting = Painting {
+            title: "My Starry Night".to_owned(),
+            author: "Vencent Gauguin".to_owned(),
+            published: 2024,
+        };
+        // Exercise1 // print_info(&mypainting);
+    }
+}
