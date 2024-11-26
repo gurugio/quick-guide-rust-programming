@@ -84,6 +84,14 @@ name = "try_operator"
 path = "src/try_operator/main.rs"
 
 [[bin]]
+name = "project"
+path = "src/project/main.rs"
+
+[[bin]]
+name = "functional_iterator"
+path = "src/functional_iterator/main.rs"
+
+[[bin]]
 name = "function_pointer"
 path = "src/function_pointer/main.rs"
 
@@ -102,10 +110,6 @@ path = "src/map_option/main.rs"
 [[bin]]
 name = "map_result"
 path = "src/map_result/main.rs"
-
-[[bin]]
-name = "project"
-path = "src/project/main.rs"
 
 [[bin]]
 name = "trait"
