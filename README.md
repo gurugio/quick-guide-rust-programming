@@ -6,10 +6,11 @@
 * [러스트 언어 소개](text/00_intro.md)
 * [러스트 개발 환경 설치](text/01_start.md)
 * [러스트 기본 문법](text/02_basic.md)
-* [트레이트](text/03_trait.md)
-* [제네릭과 수명](text/04_generic_lifetime.md)
-* [스마트 포인터](text/05_smart_pointer.md)
-* [표준 라이브러리와 표준 트레이트](text/06_std.md)
+* [함수형 프로그래밍](text/03_functional.md)
+* [트레이트](text/04_trait.md)
+* [제네릭과 수명](text/05_generic_lifetime.md)
+* [스마트 포인터](text/06_smart_pointer.md)
+* [표준 라이브러리와 표준 트레이트](text/07_std.md)
 
 ## 책 소개
 
