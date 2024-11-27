@@ -116,6 +116,14 @@ name = "map_result"
 path = "src/map_result/main.rs"
 
 [[bin]]
+name = "map_inspect"
+path = "src/map_inspect/main.rs"
+
+[[bin]]
+name = "map_debugging"
+path = "src/map_debugging/main.rs"
+
+[[bin]]
 name = "trait"
 path = "src/trait/main.rs"
 
