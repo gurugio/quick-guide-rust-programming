@@ -727,3 +727,13 @@ map에 대해서 기본적인 설명을 했으니 이번에는 제가 실제로 
 위의 예제에서 만약 serde_json::to_string메소드의 반환값이 에러가 아니라면 ? 연산자는 Ok()안에 있는 문자열의 값을 Ok밖으로 꺼내서 new_value에 저장합니다. 하지만 serde_json::to_string 메소드가 row안에 있는 바이너리 데이터의 포맷에 문제를 발견하고 에러를 반환하면 그것을 MyError::StorageMsg라는 타입으로 변환합니다. 그러면 map_err은 Err(MyError::StorageMsg)타입의 에러를 반환하고 ? 연산자는 에러 값을 상위 함수로 전달합니다.
 
 map은 Ok나 Some타입의 메소드로 호출되어서 Ok나 Some타입을 반환하지만, map_err은 Err타입의 메소드로 호출되어서 Err타입을 반환하는 차이가 있습니다.
+
+## filter
+
+========================= 2024 11 27 filter 추가할것
+
+
+## reduce
+
+
+=========================== 2024 11 27  reduce 추가할 것
