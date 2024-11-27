@@ -223,7 +223,7 @@ fn(i32) -> bool
 
 ## 클로저
 
-클로저는 이름이 없는 함수입니다. 함수 포인터를 사용할 때는 fizzcheck이나 buzzcheck같은 함수를 만들고, 그 함수 이름을 다른 함수로 전달했습니다. 이로써 함수 이름이 곧 함수 포인터라는 것도 알 수 있었습니다. 그럼 fizzbuzz예제를 함수 포인터가 아닌 클로저를 사용하도록 바꿔보겠습니다.
+클로저는 간단하게 생각하면 이름이 없는 함수입니다. 함수 포인터를 사용할 때는 fizzcheck이나 buzzcheck같은 함수를 만들고, 그 함수 이름을 다른 함수로 전달했습니다. 이로써 함수 이름이 곧 함수 포인터라는 것도 알 수 있었습니다. 그럼 fizzbuzz예제를 함수 포인터가 아닌 클로저를 사용하도록 바꿔보겠습니다.
 
 ```rust
 // src/functional_closure_nocapture/main.rs
@@ -364,23 +364,20 @@ Buzz
 
 ## map 메소드
 
-지금까지 함수형 프로그래밍의 기본에 대한 소개와 이터레이터, 클로저를 소개한 이유가 사실은 모두 map을 설명하기 위해서였습니다. 클로저를 사용하는 방법중에 가장 많이 사용하게 되는게 이터레이터의 map 메소드와 같이 사용하는 경우이기 때문입니다. 보통 가장 많이 사용하는 데이터 구조가 배열, 벡터이나 해시 등인데 모두 이터레이터를 지원하고있으니 결국 데이터 처리에 가장 많이 사용하게 되는 것이 바로 map입니다.
+map이라는 것은 하나의 함수(보통 클로저입니다)와 데이터 집합(리스트건 집한이건 스트림이건 상관없습니다)이 주어졌을때 각 개별 데이터에 대해서 동일한 함수로 처리하고 나온 결과값들을 다시 모아서 데이터 집합으로 만드는 것입니다. 글로 쓰면 좀 설명이 잘 안되긴 합니다만 하드웨어에 익숙하신 분들은 SIMD (Single Instruction Multiple Data)와 유사한 개념이라고 이해하셔도 좋습니다. map에 대한 개념이 낯설더라도 어려운 것은 아니니 몇번 쓰다보면 익숙해지는데 어려움은 없으신 것입니다. 
 
-map이라는 것은 함수(보통 클로저입니다)와 데이터 집합(리스트건 집한이건 스트림이건 상관없습니다) 주어졌을때 각 개별 데이터에 대해서 함수로 처리하고 나온 결과값들을 다시 모아서 데이터 집합으로 만드는 것입니다. 글로 쓰면 좀 설명이 잘 안되긴 합니다만 하드웨어에 익숙하신 분들은 SIMD (Single Instruction Multiple Data)와 유사한 개념이라고 이해하셔도 좋습니다. map에 대한 개념이 낯설더라도 어려운 것은 아니니 몇번 쓰다보면 익숙해지는데 어려움은 없으신 것입니다. 
+지금까지 함수형 프로그래밍의 기본에 대한 소개와 이터레이터, 클로저를 소개한 이유가 사실은 모두 map을 설명하기 위해서였습니다. 클로저를 사용하는 방법중에 가장 많이 사용하게 되는게 이터레이터의 map 메소드와 같이 사용하는 경우이기 때문입니다. 보통 가장 많이 사용하는 데이터 구조가 배열, 벡터이나 해시 등인데 모두 이터레이터를 지원하고있으니 결국 데이터 처리에 가장 많이 사용하게 되는 것이 바로 map 메소드입니다.
 
-이터레이터에서 map 메소드를 사용하는 것뿐 아니라 Option/Result Enum의 map 메소드와 사용하는 것도 자주 사용되는 방식이니까 이 세가지 경우를 이야기해보겠습니다.
+이터레이터에서 map 메소드를 사용하는 것뿐 아니라 Option/Result Enum의 map 메소드와 클로저를 사용하는 것도 자주 사용되는 방식이니까 같이 이야기해보겠습니다.
 
 ### 이터레이터의 map 메소드 사용 방법
-
-
-========================================== 2024 11 27 =============================== 예제 디렉토리 이름 바꾸고 설명 추가
 
 배열이나 range, 벡터등에서 각 데이터에 접근하기 위한 방법으로 이터레이터를 만들고 for 루프와 같이 사용하는 경우가 많습니다. 그런데 for루프 대신에 map을 사용하는게 더 편리할 때가 많습니다. 그리고 많은 경우에 map을 이용하는게 처리 속도가 더 빠르기도 합니다.
 
 가장 간단한 예를 가지고 시작해보겠습니다.
 
 ```rust
-// src/map/main.rs
+// src/functional_map/main.rs
 fn fizzbuzz_2(max: i32) {
     for i in 1..=max {
         match (i % 3, i % 5) {
@@ -455,9 +452,9 @@ $ cargo run --bin map
 40 - Buzz
 ```
 
-fizzbuzz_2함수는 이전에 match에 대한 설명을 위해서 만들어본 예제입니다. fizzbuzz_2에서 for루프와 match구문을 대신해서 이터레이터와 map메소드를 사용하도록 만든게 fizzbuzz_3함수입니다. 가장 먼저 1부터 max까지의 각 숫자들 반환하는 이터레이터를 만듭니다. 그리고 이터레이터의 map 메소드를 호출합니다. map메소드의 인자로는 이터레이터가 값을 반환할때마다 그 값을 인자로 받아서 실행되는 함수가 들어갑니다. 우리는 함수 대신에 클로저를 전달한 것입니다. 함수형 언어를 경험해보신 분들은 많이 보시던 패턴일 것입니다. 러스트는 함수형 언어의 장점들을 많이 적용한 언어입니다.
+fizzbuzz_2함수는 이전에 match에 대한 설명을 위해서 만들어본 예제입니다. fizzbuzz_2는 for루프에서 i라는 변수를 만들고 match구문에서 i값에 따라 처리를 합니다. for루프를 없애고 이터레이터와 map메소드를 사용하도록 만든게 fizzbuzz_3함수입니다. 가장 먼저 1부터 max까지의 각 숫자들 반환하는 이터레이터 `(1..=max).into_iter()`를 만듭니다. 그리고 이터레이터의 map 메소드를 호출합니다. map메소드의 인자로는 이터레이터가 값을 반환할때마다 그 값을 인자로 받아서 실행되는 함수가 들어갑니다. 우리는 함수 대신에 클로저를 전달한 것입니다. 클로저를 사용하는 방법은 바로 이전에 설명했습니다. 이제 왜 클로저를 map 메소드 이전에 설명했는지 아셨을 것입니다.
 
-일반적인 함수형 언어에 비해 러스트 언어를 사용하기 위해 주의해야할 점이 있는데 마지막에 반드시 collect 메소드를 호출해야한다는 것입니다. map메소드는 반환값으로 이터레이터를 반환합니다. 즉 이터레이터를 받아서 처리하고 또 다른 이터레이터를 반환하는 것이 map이 하는 일입니다. 만약에 collect메소드를 호출하지 않으면 ret 변수에 저장되는 값은 이터레이터가 됩니다. 이터레이터 자체는 사실상 아직 실행이 안된 상태입니다. collect가 호출되는 시점에서 이터레이터가 한단계씩 실행되면서 이제서야 map에 전달된 함수가 실행됩니다. collect는 그렇게 이터레이터에 의해 실행된 함수의 결과 값들을 모아서 벡터를 만들어서  ret변수에 저장하는 것입니다. 위의 fizzbuzz_3함수에서는 최종적으로 생성하는 값이 문자열의 벡터이기 때문에 collect에게 다음과 같이 collect가 반환해서 ret에 저장되어야 할 값의 타입이 문자열의 벡터라는 것을 알려줍니다.
+그리고 반드시 주의해야할 점이 있는데 map 메소드 호출 다음에 collect 메소드를 호출해야한다는 것입니다. map메소드는 반환값으로 이터레이터를 반환합니다. 즉 이터레이터를 받아서 처리하고 또 다른 이터레이터를 반환하는 것이 map이 하는 일입니다. 만약에 collect메소드를 호출하지 않으면 ret 변수에 저장되는 값은 이터레이터가 됩니다. 이터레이터 자체는 지연처리를 하기때문에 아직 실행이 안되서 아무런 데이터도 가지지 않은 상태입니다. collect가 하는 일이 바로 이터레이터를 한단계씩 실행시키면서 map에 전달된 함수가 실행시키는 것입니다. collect는 그렇게 이터레이터에 의해 실행된 함수의 결과 값들을 모아서 벡터를 만들어서 ret변수에 저장합니다. 위의 fizzbuzz_3함수에서는 최종적으로 생성하는 값이 문자열의 벡터이기 때문에 collect에게 다음과 같이 collect가 반환해서 ret에 저장되어야 할 값의 타입이 문자열의 벡터라는 것을 알려줍니다.
 
 ```rust
 collect::<Vec<String>>()
@@ -468,6 +465,7 @@ collect::<Vec<String>>()
 러스트 언어의 매뉴얼에는 다음과 같은 예제 코드가 있습니다.
 
 ```rust
+// https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map
 let a = [1, 2, 3];
 
 let mut iter = a.iter().map(|x| 2 * x);
@@ -478,13 +476,11 @@ assert_eq!(iter.next(), Some(6));
 assert_eq!(iter.next(), None);
 ```
 
-<https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map>
-
-참고로 assert_eq!는 2개의 인자를 받아서 서로 같지 않으면 프로그램을 종료시키는 매크로입니다. 1, 2, 3이 들어있는 벡터의 이터레이터를 만든 후 map 메소드를 실행한 결과값을 iter라는 변수에 저장했습니다. iter라는 변수가 처음 만들어졌을때는 아직 클로저를 실행하지 않은 것입니다. 하지만 최초로 이터레이터의 next 메소드가 호출되었을 때야 처음으로 1을 클로저에 전달해서 Some(2)라는 값을 얻게 됩니다. 그리고 다음 next 메소드가 호출될때 각각 2와 3을 클로저에 전달해서 Some(4)와 Some(6)이라는 값을 얻게 됩니다. 그리고 마지막으로 이터레이터에 남은 데이터가 없으면 클로저가 실행되지 못하고, 반환값도 None을 반환합니다.
+참고로 assert_eq!는 2개의 인자를 받아서 서로 같지 않으면 프로그램을 종료시키는 매크로입니다. 1, 2, 3이 들어있는 배열의 이터레이터를 만든 후 map 메소드가 반환한 또 다른 이터레이터를 iter라는 변수에 저장했습니다. iter라는 변수가 처음 만들어졌을때는 아직 클로저를 실행하지 않은 것입니다. 최초로 이터레이터의 next 메소드가 호출되었을 때야 처음으로 a 배열에서 1을 읽어서 클로저를 실행해서 Some(2)라는 값을 얻게 됩니다. 그리고 다음 next 메소드가 호출될때 각각 2와 3을 클로저에 전달해서 Some(4)와 Some(6)이라는 값을 얻게 됩니다. 그리고 마지막으로 이터레이터에 남은 데이터가 없으면 클로저가 실행되지 못하고, 반환값도 None을 반환합니다.
 
 왜 next의 결과값이 Option이 되었는지 이해가 되시나요? 이터레이터가 모든 값을 다 처리하고 더 이상 처리할 값이 없을때를 알려주기 위해 Option을 반환값으로 사용하게되었습니다. 이렇게 결과값이 있을때도 있고 없을 때도 있는 경우를 처리하기 위해 Option이 있는 것입니다. 결과값이 에러가 났기 때문에 없는 것이 아닙니다. 그냥 더 이상 처리할 데이터가 없는 정상적인 경우입니다. 그것이 Result와의 차이점입니다.
 
-이터레이터의 가장 대표적인 메소드 next와 collect를 알아봤습니다. next메소드는 위와같이 이터레이터를 한번씩 실행해주는 메소드이고, 모든 연산을 한꺼번에 실행하고 모든 결과값을 벡터에 담아서 반환하는 메소드가 collect 입니다. 벡터에 데이터가 아주 많은 경우를 생각해보면, 꼭 모든 데이터를 다 처리해야될 필요가 없을 때도 있습니다. 조금씩 나눠서 처리해도되는 경우가 있다면 next를 사용하면 됩니다.
+이터레이터의 메소드 next와 collect의 차이를 이해하셨나요? next메소드는 위와같이 이터레이터를 한번씩 실행해주는 메소드이고, 모든 연산을 한꺼번에 실행하고 모든 결과값을 벡터에 담아서 반환하는 메소드가 collect 입니다. 벡터에 데이터가 아주 많은 경우를 생각해보면, 꼭 모든 데이터를 다 처리해야될 필요가 없을 때도 있습니다. 조금씩 나눠서 처리해도되는 경우가 있다면 next를 사용하면 됩니다.
 
 ### Option의 map 메소드 사용 방법
 
@@ -512,11 +508,7 @@ Double Some: Some(10)
 Double None: None
 ```
 
-Some(5)라는 값을 가진 변수와 None 값을 가진 변수가 있습니다. 그리고 각각 map메소드를 호출해주었습니다. 이 예제 소스는 워낙 간단하니까 우리 눈에 변수가 Some타입일지 None타입일지 알 수 있지만, 당연히 보통의 경우에는 어떤 함수의 반환값이 어느 타입일지는 알 수 없습니다. 그러면 매번 패턴 매칭이나 if let을 사용해서 값을 꺼내서 필요한 연산을 해주게 되면 코드가 길어질 것입니다. 코드가 길어진다는 것은 읽기 힘들어지고, 에러가 날 경우도 많아진다는 것입니다. 단순히 성능의 최적화를 위해 코드를 짧게 유지하는게 필요한게 아니라, 읽기 좋고 버그가 적은 코드를 만들기 위해서도 코드를 짧게 유지하는게 좋습니다.
-
-Option의 메소드인 map은 타입이 Some일때는 Some안에 있는 값을 꺼내서 클로저의 인자로 넘겨주고, 클로저의 결과값을 Option타입으로 반환해줍니다. None 타입의 map 메소드는 아무런 처리도 하지않고 None을 그대로 반환해줍니다. 따라서 어떤 변수의 값이 Option타입일때, if let이나 match를 사용할 필요없이, 그 변수를 그대로 다른 함수나 클로저에 전달할 수 있게됩니다.
-
-참고로 Some이나 None 값을 출력하기 위해서 “{:?}” 리터럴을 사용하면 Some인지 None인지를 출력해주니까 디버깅할때 편리합니다.
+Option의 메소드인 map은 타입이 Some일때는 Some안에 있는 값을 꺼내서 클로저의 인자로 넘겨주고, 클로저의 결과값을 Option타입으로 반환해줍니다. None 타입의 map 메소드는 아무런 처리도 하지않고 None을 그대로 반환해줍니다. 따라서 어떤 변수의 값이 Option타입일때, if let이나 match를 사용할 필요없이, 그 변수를 그대로 다른 함수나 클로저에 전달할 수 있게됩니다. 이 예제 소스는 워낙 간단하니까 우리 눈에 변수가 Some타입일지 None타입일지 알 수 있지만, 당연히 보통의 경우에는 어떤 함수의 반환값이 어느 타입일지는 알 수 없습니다. 그러면 매번 패턴 매칭이나 if let을 사용해서 값을 꺼내서 필요한 연산을 해주게 되면 코드가 길어질 것입니다. 코드가 길어진다는 것은 읽기 힘들어지고, 에러가 날 경우도 많아진다는 것입니다. 단순히 성능의 최적화를 위해 코드를 짧게 유지하는게 필요한게 아니라, 읽기 좋고 버그가 적은 코드를 만들기 위해서도 코드를 짧게 유지하는게 좋습니다.
 
 ### Result의 map 메소드 사용 방법
 
@@ -554,25 +546,16 @@ Double Error: Err("denominator cannot be zero")
 하는 일도 거의 동일합니다. 값이 있는 경우, 즉 Ok 타입인 경우에는 그 안의 값을 꺼내서 전달받은 클로저를 호출합니다. 만약 값이 Err 타입인 경우에는 아무일도 하지 않고, 자기 자신을 반환합니다. if let이나 match 패턴은 클로저로 처리할 수 없을만큼 코드가 길때 사용하고, 코드가 간단하다면 map을 사용하는게 더 좋겠지요.
 
 
-### WIP map 메소드를 사용하면서 디버깅하는 방법
+### map 메소드를 사용하면서 디버깅하는 방법
 
-1. inspect()
-```
-fn fizzbuzz_3(max: i32) {
-    let ret = (1..=max)
-        .into_iter()
-        .map(|i| match (i % 3, i % 5) {
-            (0, 0) => format!("{} - FizzBuzz\n", i),
-            (0, _) => format!("{} - Fizz\n", i),
-            (_, 0) => format!("{} - Buzz\n", i),
-            (_, _) => "".to_string(),
-        })
-        .collect::<Vec<String>>()
-        .join("");
-}
-```
-2. 여러단계를 하나씩 쪼개기
+map의 장점도 있지만 단점이 디버깅이 어렵다는 것입니다. map이 아니라 for 루프를 사용한다면 한단계씩 처리할 때마다 보통 println!등을 사용해서 디버깅 메세지를 넣을 수도 있을텐데 map을 사용하니 어떻게 디버깅해야할지 난감할 때가 있습니다. 그럴때 활용할 수 있는 방법들을 소개하겠습니다.
+
+#### inspect 메소드
+
+첫번째로 이터레이터의 inspect 메소드가 있습니다. 사실 map하고 하는 일은 동일합니다. 이터레이터에서 개별 데이터를 하나씩 받아와서 정해진 일을 하는 것입니다. 하지만 차이가 있다면 받은 데이터를 그대로 반환한다는 것입니다. 결론적으로는 아무런 일도 하지 않는 것입니다. 왜 아무런 일도 하지 않는 메소드가 필요하냐면 바로 디버깅을 위해서 필요한 것입니다. 다음 예제를 보면 이전에 map을 사용해서 만든 fizzbuzz_3함수와 완전히 동일한데 단지 inspect를 중간에 넣은 것 뿐입니다.
+
 ```rust
+// src/map_inspect/main.rs
 fn fizzbuzz_3(max: i32) {
     let ret = (1..=max)
         .into_iter()
@@ -582,27 +565,146 @@ fn fizzbuzz_3(max: i32) {
             (_, 0) => format!("{} - Buzz\n", i),
             (_, _) => "".to_string(),
         })
-        .inspect(|x| println("map returns {}", x))
+        .inspect(|s| println!("map returns {}", s))
         .collect::<Vec<String>>()
         .join("");
+    println!("{}", ret);
 }
 
-let ret = (1..=max)
-println!("{:?}", ret);
-let ret = ret.into_iter()
-        .map(|i| match (i % 3, i % 5) {
-            (0, 0) => format!("{} - FizzBuzz\n", i),
-            (0, _) => format!("{} - Fizz\n", i),
-            (_, 0) => format!("{} - Buzz\n", i),
-            (_, _) => "".to_string(),
-        })
-print("{:?}", ret);
-ret.join("");
-print("{:?}", ret);
+fn main() {
+    fizzbuzz_3(41);
+}
 ```
 
+```bash
+$ cargo run --bin map_inspect
+   Compiling my-rust-book v0.1.0 (/Users/user/study/my-rust-book)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.26s
+     Running `target/debug/map_inspect`
+map returns ''
+map returns ''
+map returns '3 - Fizz
+'
+map returns ''
+map returns '5 - Buzz
+'
+map returns '6 - Fizz
+'
+map returns ''
+map returns ''
+map returns '9 - Fizz
+'
+map returns '10 - Buzz
+'
+map returns ''
+map returns '12 - Fizz
+'
+map returns ''
+map returns ''
+map returns '15 - FizzBuzz
+'
+map returns ''
+map returns ''
+map returns '18 - Fizz
+'
+map returns ''
+map returns '20 - Buzz
+'
+map returns '21 - Fizz
+'
+map returns ''
+map returns ''
+map returns '24 - Fizz
+'
+map returns '25 - Buzz
+'
+map returns ''
+map returns '27 - Fizz
+'
+map returns ''
+map returns ''
+map returns '30 - FizzBuzz
+'
+map returns ''
+map returns ''
+map returns '33 - Fizz
+'
+map returns ''
+map returns '35 - Buzz
+'
+map returns '36 - Fizz
+'
+map returns ''
+map returns ''
+map returns '39 - Fizz
+'
+map returns '40 - Buzz
+'
+map returns ''
+3 - Fizz
+5 - Buzz
+6 - Fizz
+9 - Fizz
+10 - Buzz
+12 - Fizz
+15 - FizzBuzz
+18 - Fizz
+20 - Buzz
+21 - Fizz
+24 - Fizz
+25 - Buzz
+27 - Fizz
+30 - FizzBuzz
+33 - Fizz
+35 - Buzz
+36 - Fizz
+39 - Fizz
+40 - Buzz
+```
 
-## Option과 Result를 러스트 스타일에 맞게 사용하는 방법
+inspect를 중간에 넣었지만 그 외에 아무것도 고칠 필요가 없습니다. 왜냐면 inpsect는 받은 데이터를 그대로 반환하기 때문입니다. 실행 결과를 보면 map에서 반환한 문자열을 출력해주고 있습니다. collect와 join을 실행하면서 사라진 빈 문자열 ""도 출력해줍니다. i값이 4일때나 7일때 제대로 처리가 되고있는지를 확인할 수 있습니다.
+
+#### 여러단계를 하나씩 쪼개기
+
+가장 단순하지만 가장 확실한 디버깅 방법은 그냥 한단계 한단계씩 나눠서 각 단계별로 결과값을 디버깅 메세지로 출력해보는 것입니다.
+
+```rust
+// src/map_debugging/main.rs
+fn fizzbuzz_3(max: i32) {
+    let ret_range = 1..=max;
+    println!("range: {:?}", ret_range);
+    let ret_iter = ret_range.into_iter().map(|i| match (i % 3, i % 5) {
+        (0, 0) => format!("{} - FizzBuzz\n", i),
+        (0, _) => format!("{} - Fizz\n", i),
+        (_, 0) => format!("{} - Buzz\n", i),
+        (_, _) => "".to_string(),
+    });
+    println!("iterator: {:?}", ret_iter);
+    let ret_collect = ret_iter.collect::<Vec<String>>();
+    println!("after collect: {:?}", ret_collect);
+    let ret_final = ret_collect.join("");
+    println!("after join: {:?}", ret_final);
+}
+
+fn main() {
+    fizzbuzz_3(41);
+}
+```
+
+```bash
+$ cargo run --bin map_debugging
+   Compiling my-rust-book v0.1.0 (/Users/user/study/my-rust-book)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.26s
+     Running `target/debug/map_debugging`
+range: 1..=41
+iterator: Map { iter: 1..=41 }
+after collect: ["", "", "3 - Fizz\n", "", "5 - Buzz\n", "6 - Fizz\n", "", "", "9 - Fizz\n", "10 - Buzz\n", "", "12 - Fizz\n", "", "", "15 - FizzBuzz\n", "", "", "18 - Fizz\n", "", "20 - Buzz\n", "21 - Fizz\n", "", "", "24 - Fizz\n", "25 - Buzz\n", "", "27 - Fizz\n", "", "", "30 - FizzBuzz\n", "", "", "33 - Fizz\n", "", "35 - Buzz\n", "36 - Fizz\n", "", "", "39 - Fizz\n", "40 - Buzz\n", ""]
+after join: "3 - Fizz\n5 - Buzz\n6 - Fizz\n9 - Fizz\n10 - Buzz\n12 - Fizz\n15 - FizzBuzz\n18 - Fizz\n20 - Buzz\n21 - Fizz\n24 - Fizz\n25 - Buzz\n27 - Fizz\n30 - FizzBuzz\n33 - Fizz\n35 - Buzz\n36 - Fizz\n39 - Fizz\n40 - Buzz\n"
+```
+
+println매크로에 `{:?}` 포맷 지정자가 있어서 이렇게 편리하게 디버깅할 수 있습니다. 이것도 단점이 있습니다. collect가 실행되기 전에는 아무런 데이터도 볼 수 없다는 것입니다. 그래서 저는 collect가 실행되기전 단계는 inspect를 사용하고 데이터가 생성된 후에는 이렇게 단계별로 나눠서 실행해보는 방법을 사용합니다.
+
+### Option과 Result를 러스트 스타일에 맞게 사용하는 방법
 
 map이 편리하지만 반드시 주의해야 할 점이 하나 있는데 바로 map을 호출하면 객체가 해지된다는 것입니다. 영어로는 consume이라고 표현하는데, 그 의미는 자기 자신의 값을 소비해서 없애버리고 반환값을 생성한다는 것입니다.
 
@@ -622,7 +724,7 @@ maybe_some_string은 소비consume되어버렸으니 map연산을 호출한 이�
 
 다음에는 Option이나 Result의 내부에 있는 값을 해지하지않고 접근하거나 수정할 수 있는 메소드들을 소개하겠습니다.
 
-### Option의 as_ref 메소드
+#### Option의 as_ref 메소드
 
 먼저 map을 써도 원본 객체가 해지되지 않으려면 어떡해야할까요? 답은 컴파일러가 이미 알려주고 있습니다. 아래는 위 예제의 마지막 줄을 주석처리하지않고 빌드했을 경우 에러 메세지입니다.
 
