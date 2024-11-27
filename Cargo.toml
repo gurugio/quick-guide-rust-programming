@@ -92,12 +92,16 @@ name = "functional_iterator"
 path = "src/functional_iterator/main.rs"
 
 [[bin]]
-name = "function_pointer"
-path = "src/function_pointer/main.rs"
+name = "functional_function_pointer"
+path = "src/functional_function_pointer/main.rs"
 
 [[bin]]
-name = "closure"
-path = "src/closure/main.rs"
+name = "functional_closure_nocapture"
+path = "src/functional_closure_nocapture/main.rs"
+
+[[bin]]
+name = "functional_closure_capture"
+path = "src/functional_closure_capture/main.rs"
 
 [[bin]]
 name = "map"
