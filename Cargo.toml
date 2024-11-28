@@ -124,6 +124,14 @@ name = "map_debugging"
 path = "src/map_debugging/main.rs"
 
 [[bin]]
+name = "functional_filter"
+path = "src/functional_filter/main.rs"
+
+[[bin]]
+name = "functional_reduce"
+path = "src/functional_reduce/main.rs"
+
+[[bin]]
 name = "trait"
 path = "src/trait/main.rs"
 
