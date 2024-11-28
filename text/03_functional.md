@@ -914,5 +914,98 @@ filter 메소드는 데이터의 불변 참조를 인자로 받습니다. 인자
 
 ## Reduce
 
+마지막으로 reduce 메소드입니다. 모든 데이터에 특정 연산을 해서 하나의 데이터를 반환하는 일을 합니다. map이나 filter는 각 데이터에 특정 처리를 한 후 각 결과값들을 다시 이터레이터로 반환했다면, reduce는 하나의 데이터로 합치는 일을 합니다. 다음은 fizzbuzz 예제에 filter와 map, reduce까지 모두 적용한 예제입니다.
 
-=========================== 2024 11 27  reduce 추가할 것
+```rust
+fn fizzbuzz_fn<FA, FB>(fizzfn: FA, buzzfn: FB)
+where
+    FA: Fn(i32) -> bool,
+    FB: Fn(i32) -> bool,
+{
+    let fizz = (1..=50)
+        .into_iter()
+        .filter(|i| fizzfn(*i))
+        .map(|i| format!("{} is Fizz\n", i))
+        .reduce(|a, b| a + &b)
+        .unwrap();
+    println!("{}", fizz);
+    let buzz = (1..=50)
+        .into_iter()
+        .filter(|i| buzzfn(*i))
+        .map(|i| format!("{} is Buzz\n", i))
+        .reduce(|a, b| a + &b)
+        .unwrap();
+    println!("{}", buzz);
+    let fizzbuzz = (1..=50)
+        .into_iter()
+        .filter(|i| fizzfn(*i) && buzzfn(*i))
+        .map(|i| format!("{} is Fizz and Buzz\n", i))
+        .reduce(|a, b| a + &b)
+        .unwrap();
+    println!("{}", fizzbuzz);
+}
+
+fn main() {
+    fizzbuzz_fn(|x| x % 3 == 0, |y| y % 5 == 0);
+}
+```
+
+```bash
+ % cargo run --bin functional_reduce
+   Compiling my-rust-book v0.1.0 (/Users/user/study/my-rust-book)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
+     Running `target/debug/functional_reduce`
+3 is Fizz
+6 is Fizz
+9 is Fizz
+12 is Fizz
+15 is Fizz
+18 is Fizz
+21 is Fizz
+24 is Fizz
+27 is Fizz
+30 is Fizz
+33 is Fizz
+36 is Fizz
+39 is Fizz
+42 is Fizz
+45 is Fizz
+48 is Fizz
+
+5 is Buzz
+10 is Buzz
+15 is Buzz
+20 is Buzz
+25 is Buzz
+30 is Buzz
+35 is Buzz
+40 is Buzz
+45 is Buzz
+50 is Buzz
+
+15 is Fizz and Buzz
+30 is Fizz and Buzz
+45 is Fizz and Buzz
+
+```
+
+reduce연산자는 a와 b, 2개의 인자를 받습니다. a는 빈 데이터로 시작되서 이터레이터의 각 데이터가 추가된다고 생각하면 됩니다. 다음과 같이 누적된다고 생각하는 것도 좋습니다.
+
+```
+a = ""
+a = a + "3 is Fizz\n" = "3 is Fizz\n"
+a = a + "6 is Fizz\n" = "3 is Fizz\n6 is Fizz\n"
+a = a + "9 is Fizz\n" = "3 is Fizz\n6 is Fizz\n9 is Fizz\n"
+...
+```
+
+fizz 처리를 하는 코드를 순서대로 어떻게 처리되는지 생각해보면 다음과 같습니다.
+
+1. 1부터 50까지의 숫자를 반환하는 이터레이터를 만듬
+2. 그 중에서 fizzfn함수에서 true를 반환하는 숫자만 걸러냄 (filter)
+3. 걸러낸 숫자들 각각을 "X is Fizz"라는 문자열로 변환 (map)
+4. 각 문자열들을 "+" 연산자를 써서 하나로 합침 (reduce)
+
+나머지 buzz와 fizzbuzz도 동일하게 처리됩니다. reduce는 collect와 마찬가지로 이터레이터 전체를 모두 실행시키고 최종 데이터를 생산합니다. 그래서 마지막에 collect 호출이 필요없습니다.
+
+참고로 문자열과 문자열을 합치는 것은 `String + &str`입니다. 파이썬과같이 `String + String`이 되지 않습니다. 왜냐면 `+`연산자는 내부적으로 String타입의 push_str 메소드를 호출하는데 push_str 메소드는 &str타입을 인자로 받기 때문입니다.
