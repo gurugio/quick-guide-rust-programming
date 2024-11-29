@@ -1,0 +1,17 @@
+{
+  "index": "Rust 언어 소개",
+  "01_start": "처음 시작하기",
+  "02_basic": "기본 문법",
+  "03_trait": "트레이트(Trait) 소개",
+  "04_generic_lifetime": "제네릭(Generic) 프로그래밍 소개",
+  "05_smart_pointer": "데이터를 자동으로 관리하는 스마트 포인터",
+  "06_std": "표준 라이브러리와 트레이트",
+  "88_tiny_project": "시리얼번호 만들기 프로젝트",
+  "99_future_work": "Future Work",
+  "contact": {
+    "title": "Contact ↗",
+    "type": "page",
+    "href": "https://github.com/gurugio/quick-guide-rust-programming",
+    "newWindow": true
+  }
+}
