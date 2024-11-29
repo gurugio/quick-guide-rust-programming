@@ -1,0 +1,31 @@
+{
+  "name": "quick-guide-rust-programming-docs",
+  "version": "0.0.1",
+  "description": "Documentation of Quick Guide Rust Programming",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gurugio/quick-guide-rust-programming"
+  },
+  "author": "Yumin Jung",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gurugio/quick-guide-rust-programming/issues"
+  },
+  "homepage": "https://github.com/gurugio/quick-guide-rust-programming",
+  "dependencies": {
+    "next": "^13.0.6",
+    "nextra": "latest",
+    "nextra-theme-docs": "latest",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "18.11.10",
+    "typescript": "^4.9.3"
+  }
+}
