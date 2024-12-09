@@ -492,7 +492,7 @@ Printable&lt;i32&gt;나 Printable&lt;String&gt;등등 제네릭 타입이 다른
 fn check_command(cmd: &str) -> Result<usize, String> {
   match cmd {
     "good" => Ok(0),
-    "unsupported" = Err("Unsupported command".to_owned()),
+    "unsupported" => Err("Unsupported command".to_owned()),
     "bad" => Err("Bad command".to_owned()),
     _ => Err("Wierd command".to_owned()),
   }
