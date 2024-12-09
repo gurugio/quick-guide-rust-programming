@@ -507,8 +507,7 @@ fn handle_command(cmd: &str) -> Result<usize, String> {
   let failed = check_command(cmd);
   if failed.is_ok() {
     println!("Second check passed: status={}", failed.unwrap());
-  }
-  if failed.is_err() {
+  } else if failed.is_err() {
     println!("Second check failed: status={:?}", failed);
   }
 
