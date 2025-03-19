@@ -1109,7 +1109,7 @@ fn internal_scope() {
 }
 ```
 
-함수 시작 부분에서 생성된 hello_string이라는 변수는 함수가 끝나는 }를 만나면서 해지됩니다. 함수의 스코프가 끝나는 }에서 함수가 소용했던 hello_string이라는 변수가 해지되는 것입니다. "hello"가 저장되어있는 메모리가 해지되고, hello_string이라는 변수를 더 이상 사용할 수 없게 되는 것입니다.
+함수 시작 부분에서 생성된 hello_string이라는 변수는 함수가 끝나는 }를 만나면서 해지됩니다. 함수의 스코프가 끝나는 }에서 함수가 사용했던 hello_string이라는 변수가 해지되는 것입니다. "hello"가 저장되어있는 메모리가 해지되고, hello_string이라는 변수를 더 이상 사용할 수 없게 되는 것입니다.
 
 hello_string이라는 변수는 \_internal_scope함수가 소유하고, 따라서 스코프는 \_internal_scope함수가 끝날 때까지 입니다. world_string이라는 변수의 소유권은 \_internal_scope함수안에 새로 만들어진 블럭에 있습니다. 그 새로운 블럭의 시작 지점은 두번째 {이고 끝 지점은 첫번째 }가 있는 곳입니다. 따라서 아래와같이 world_string을 소유한 블럭 밖에서 world_string을 사용할 수가 없습니다.
 
