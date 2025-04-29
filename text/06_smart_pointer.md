@@ -7,6 +7,314 @@
 1. Deref 트레이트: 메모리 주소나 레퍼런스를 읽어서 원본 데이터에 접근하는 것이 역참조(Dereference)입니다. 이런 스마트 포인터는 사실상 구조체라고 말씀드렸습니다. 구조체는 포인터가 아니니 구조체를 통해서 데이터에 접근하려면 뭔가 추가적인 구현이 필요하겠지요. 이게 바로 Deref 트레이트입니다. *와 같은 역참조 연산자를 스마트 포인터와 사용할 수 있게 해줍니다. 잠시 후에 직접 구현해보면서 다시 이야기하겠습니다.
 2. Drop 트레이트: 스마트 포인터는 자신의 스코프를 벗어나게되면 자동으로 해지되어야합니다. 러스트는 스마트 포인터가 스코프를 벗어나면 Drop 트레이트의 drop 메소드를 호출해서 스마트 포인터가 가리키는 데이터를 해지합니다. 그 외에도 파일을 닫거나하는 자원 정리 기능들을 실행할 수도 있습니다. 마찬가지로 잠시 후에 직접 구현해보겠습니다.
 
+## 스마트하지않은 Raw Pointer
+
+우선 먼저 스마트한 기능이 없는 순수한 포인터를 어떻게 사용하는지부터 알아보겠습니다.
+거의 볼 일은 없지만 이미 구현된 라이브러리를 분석하거나, 임베디드 시스템 개발할 때와 같이 필요한 경우가 있습니다.
+
+포인터는 다음과 같이 mutable아니면 const 선언을 반드시 포함해서 선언해야합니다.
+
+```rust
+fn main() {
+    let mut mutablestr = String::from("mutable");
+    let mutptr: *mut String = &mut mutablestr;
+    println!("Pointer={:?}", mutptr);
+
+    let conststr = String::from("const");
+    let constptr: *const String = &conststr;
+    println!("Pointer={:?}", constptr);
+}
+```
+
+가리키는 데이터가 mutable인 포인터를선언할 때는 반드시 `*mut T`와 같이 타입을 지정해야합니다.
+그래서 mutptr의 타입은 `*mut String`이 됩니다.
+만약 가리키는 데이터가 mutable이 아니라면 mut 키워드를 안쓰는 것으로 충분한게 아니라 반드시 const 키워드를 써주어야합니다.
+그 외에는 C/C++ 계열에서 사용하는 포인터와 별로 다를게 없어보입니다.
+
+아직 정의되지 않은 포인터를 선언할 때는 C/C++ 계열과 같이 정수값 0으로 포인터를 초기화할 수도 있습니다.
+```rust
+    let nullptr: *mut String = 0 as *mut String;
+```
+
+보통은 C/C++에서 정수값 0을 의미하는 NULL을 미리 정의해놓은 것처럼 std::ptr에도 null()/null_mut()을 정의해 놓았으니 사용하는게 좋습니다.
+```rust
+    let const_nullptr: *const String = std::ptr::null();
+    let mutable_nullptr: *mut String = std::ptr::null_mut();
+    assert_eq!(constptr.is_null(), true);
+```
+
+지금까지만 보면 C/C++ 에서 사용하던 것과 큰 차이가 없어보일 수 있습니다.
+하지만 결정적으로 큰 차이점이 하나 있는데 바로 포인터 연산입니다.
+아래와 같이 포인터 값에 오프셋값을 더해서 배열에 접근하는 예제를 실행해보면 Rust언어는 포인터 값에 정수 값을 더하는 연산을 허용하지 않는다는 것을 알 수 있습니다.
+```rust
+fn main() {
+    let numbers: [i32; 5] = [1, 2, 3, 4, 5];
+    for i in 0..5 {
+        let ptr: *const i32 = &numbers[0];
+        println!("Array={}", *(ptr + i));
+    }
+}
+```
+```bash
+
+error[E0369]: cannot add `{integer}` to `*const i32`
+   --> src/main.rs:178:36
+    |
+178 |         println!("Array={}", *(ptr + i));
+    |                                --- ^ - {integer}
+    |                                |
+    |                                *const i32
+    |
+help: consider using `wrapping_add` or `add` for pointer + {integer}
+    |
+178 |         println!("Array={}", *(ptr.wrapping_add(i)));
+    |                                   ~~~~~~~~~~~~~~ +
+
+```
+
+그럼 컴파일러가 알려주는 대로 wrapping_add 메소드를 사용하면 괜찮을까요?
+아래와 같이 wrapping_add 메소드를 사용하도록 고쳐봐도 또 다른 에러를 만나게 됩니다.
+```rust
+    let numbers: [i32; 5] = [1, 2, 3, 4, 5];
+    for i in 0..5 {
+        let ptr: *const i32 = &numbers[0];
+        println!("Array={}", *ptr.wrapping_add(i));
+    }
+```
+```bash
+error[E0133]: dereference of raw pointer is unsafe and requires unsafe function or block
+   --> src/main.rs:178:30
+    |
+178 |         println!("Array={}", *ptr.wrapping_add(i));
+    |                              ^^^^^^^^^^^^^^^^^^^^ dereference of raw pointer
+    |
+    = note: raw pointers may be null, dangling or unaligned; they can violate aliasing rules and cause data races: all of these are undefined behavior   
+```
+
+아마 Rust에 관심이 있었던 분들이라면 이미 몇번은 들어보셨을 그 악명높은 unsafe 키워드를 만나게 되었습니다.
+unsafe가 무엇인지는 이미 에러 메세지에 잘 나타나 있습니다.
+포인터가 null이거나 dangling(이미 해지된 객체를 가리키는 포인터)이거나 unaligned(많은 임베디드 시스템에서는 포인터 주소가 4나 8의 배수가 되어야만 해당 메모리를 읽을 수 있습니다)일 수 있으니, unsafe라는 블럭에서 메모리 참조를 사용하라는 것입니다.
+결국 최종적으로 다음과 같이 실행할 수 있습니다.
+
+```rust
+    let numbers: [i32; 5] = [1, 2, 3, 4, 5];
+    for i in 0..5 {
+        let ptr: *const i32 = &numbers[0];
+        unsafe {
+            println!("Array={}", *ptr.wrapping_add(i));
+        }
+    }
+```
+
+그리고 std::ptr 매뉴얼에서 추천하는 대로 포인터를 직접 읽는 *연산자를 사용하지 않고 다음과 같이 read메소드를 사용해주면 가장 완성도 있는 메모리 연산 코드가 됩니다.
+```rust
+    let numbers: [i32; 5] = [1, 2, 3, 4, 5];
+    for i in 0..5 {
+        let ptr: *const i32 = &numbers[0];
+        unsafe {
+            println!("Array={}", ptr.wrapping_add(i).read());
+        }
+    }
+```
+
+Raw 포인터에 대한 것은 이게 전부이긴 합니다만 사실 실제 프로젝트에서는 이와같이 완전히 포인터를 그대로 사용하는 경우는 없습니다.
+다음은 제가 예제로 만들어본 Deque 라이브러리입니다.
+보통 std::ptr::null() 을 직접 사용하는 것보다 아래 예제 코드와 같이 std::ptr::NonNull()을 사용하는게 더 안전합니다.
+
+1. 첫번째로 초기화되지 않은 포인터를 선언할 때 NonNull::<T>::dangling()으로 초기화해서, 포인터가 가리키게될 데이터 타입을 지정하고 align된 포인터를 만들 수 있습니다.
+2. 포인터에 접근할 때 as_ptr 메소드를 강제로 사용하도록해서 포인터 접근의 안전성을 높입니다. 
+3. offset, read, write 등 포인터 접근을 검사해주는 메소드들을 사용할 수 있습니다.
+
+```rust
+use std::alloc;
+use std::fmt;
+use std::ptr::NonNull;
+
+struct Deque {
+    buffer: NonNull<i32>,
+    capacity: isize, // buffer size
+    front: isize,
+    back: isize,
+}
+
+impl Deque {
+    fn new() -> Self {
+        Deque {
+            buffer: NonNull::<i32>::dangling(),
+            capacity: 0,
+            front: 0,
+            back: 0,
+        }
+    }
+
+    fn size(&self) -> isize {
+        if self.front >= self.back {
+            self.front - self.back
+        } else {
+            self.capacity - self.back + self.front
+        }
+    }
+
+    fn capacity(&self) -> isize {
+        self.capacity
+    }
+
+    fn empty(&self) -> bool {
+        self.size() == 0
+    }
+
+    fn full(&self) -> bool {
+        // -1: an entry pointed by self.back must be empty
+        self.size() == self.capacity() - 1
+    }
+
+    //
+    // refer: https://doc.rust-lang.org/nomicon/vec/vec-raw.html
+    //
+    fn grow(&mut self, new_cap: isize) {
+        // https://doc.rust-lang.org/alloc/alloc/fn.alloc.html
+        let new_layout = alloc::Layout::array::<i32>(new_cap as usize).unwrap();
+        let new_ptr = if self.capacity == 0 {
+            unsafe { alloc::alloc(new_layout) }
+        } else {
+            let old_layout = alloc::Layout::array::<i32>(self.capacity as usize).unwrap();
+            let old_ptr = self.buffer.as_ptr() as *mut u8;
+            unsafe { alloc::realloc(old_ptr, old_layout, new_layout.size()) }
+        };
+
+        self.buffer = match NonNull::new(new_ptr as *mut i32) {
+            Some(p) => p,
+            None => alloc::handle_alloc_error(new_layout),
+        };
+
+        self.capacity = new_cap;
+    }
+
+    fn front(&self) -> i32 {
+        if self.empty() == true {
+            return -1;
+        }
+        let v: i32 = unsafe { self.buffer.as_ptr().offset(self.front).read() };
+        v
+    }
+
+    fn back(&self) -> i32 {
+        if self.empty() == true {
+            return -1;
+        }
+        let v: i32 = unsafe {
+            self.buffer
+                .as_ptr()
+                .offset((self.back + 1) % self.capacity)
+                .read()
+        };
+        v
+    }
+
+    fn push_front(&mut self, v: i32) {
+        assert!(!self.full());
+
+        // move pointer and insert data
+        self.front = (self.front + 1) % self.capacity;
+        unsafe { self.buffer.as_ptr().offset(self.front).write(v) }
+    }
+
+    fn pop_front(&mut self) -> i32 {
+        if self.empty() == true {
+            return -1;
+        }
+        let ret = self.front();
+
+        // no need to delete data
+        // just move pointer backward
+        self.front = if self.front == 0 {
+            self.capacity - 1
+        } else {
+            self.front - 1
+        };
+        ret
+    }
+
+    fn push_back(&mut self, v: i32) {
+        assert!(!self.full());
+
+        // insert data and move pointer
+        unsafe {
+            self.buffer.as_ptr().offset(self.back).write(v);
+        }
+        self.back = if self.back == 0 {
+            self.capacity - 1
+        } else {
+            self.back - 1
+        };
+    }
+
+    fn pop_back(&mut self) -> i32 {
+        if self.empty() == true {
+            return -1;
+        }
+        let ret = self.back();
+        self.back = (self.back + 1) % self.capacity;
+        ret
+    }
+}
+
+impl fmt::Debug for Deque {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut v: i32;
+        let mut output: String = format!(
+            "==== Deque: capacity={} back={} front={}\n",
+            self.capacity, self.back, self.front
+        );
+        for i in 0..self.capacity {
+            v = unsafe { self.buffer.as_ptr().offset(i).read() };
+            if v != 0 {
+                output.push_str(&format!("buffer[{}]={}\n", i, v));
+            }
+        }
+
+        write!(f, "{}====", output)
+    }
+}
+
+impl Drop for Deque {
+    fn drop(&mut self) {
+        if self.capacity != 0 {
+            let layout = alloc::Layout::array::<i32>(self.capacity as usize).unwrap();
+            unsafe { alloc::dealloc(self.buffer.as_ptr() as *mut u8, layout) }
+            println!("Deque is freed");
+        }
+    }
+}
+
+fn main() {
+    let mut que = Deque::new();
+    que.grow(8);
+
+    que.push_front(1);
+    que.push_back(5);
+    println!("{:?}", que);
+    assert_eq!(que.front(), 1);
+    assert_eq!(que.back(), 5);
+    assert_eq!(que.pop_front(), 1);
+    assert_eq!(que.pop_back(), 5);
+    assert_eq!(que.empty(), true);
+}
+```bash
+$ cargo run
+   Compiling bin-example v0.1.0 (/Users/user/study/bin-example)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.26s
+     Running `target/debug/bin-example`
+==== Deque: capacity=8 back=7 front=1
+buffer[0]=5
+buffer[1]=1
+====
+Deque is freed
+```
+
+동작하는 예제를 만들고 싶어서 직접 메모리를 할당하는 std::alloc를 사용해서 메모리를 할당하도록 만들어봤습니다만 전부를 다 이해할 필요는 없습니다.
+이런 형태로 포인터를 사용하는 것이 Rust 언어에서 추천하는 방식이라는 것을 이해하면 충분합니다.
+
 ## 데이터를 힙 영역에 저장하는 `Box<T>`
 
 스마트 포인터 타입이 여러가지가 있습니다만 가장 핵심적인 스마트 포인터는 `Box<T>`타입입니다. `<T>`라는 표시는 이 데이터 타입 내부에 저장되는 타입이 제네릭 타입이라는 것입니다. 자신이 원하는 어떤 데이터 타입도 저장할 수 있다는 의미입니다.
