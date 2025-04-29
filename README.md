@@ -11,15 +11,17 @@
 * [제네릭과 수명](text/05_generic_lifetime.md)
 * [스마트 포인터](text/06_smart_pointer.md)
 * [표준 라이브러리와 표준 트레이트](text/07_std.md)
-* [부록: Cargo 사용 방법](text/08_cargo.md)
-* [부록: 개발팁](text/10_etc.md) - 작성중
-* 부록: 토이 프로젝트 - 시리얼번호 생성기 프로젝트
+* [Cargo 사용 방법](text/08_cargo.md)
+* 토이 프로젝트 - 시리얼번호 생성기 프로젝트
   * [프로젝트 소개](text/09_tiny_project/09_00_intro.md)
   * [암호화](text/09_tiny_project/09_01_encrypt.md)
   * [플러그인](text/09_tiny_project/09_02_plugin_drivers.md)
   * [추가 플러그인](text/09_tiny_project/09_03_more_drivers.md)
   * [커맨드 라인 옵션](text/09_tiny_project/09_04_command_option.md)
   * [설정 파일](text/09_tiny_project/09_05_conf_file.md)
+* [개발팁](text/10_etc.md) - 작성중
+
+
 
 ## 책 소개
 
