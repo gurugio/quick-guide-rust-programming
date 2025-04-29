@@ -6,6 +6,7 @@ Arc
 Mutex
 Condvar
 AtomicBool
+Channel
 
 ### 메모리 오더링의 기본 개념
 
