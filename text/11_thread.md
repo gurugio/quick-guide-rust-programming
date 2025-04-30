@@ -57,7 +57,7 @@ fn main() {
 ```
 
 주의해야할 것은 store, load 등의 메소드에 메모리 오더링을 위한 std::sync::atomic::Ordering 타입을 전달한다는 것입니다.
-일반적인 상황에서는 std::sync::atomic::Ordering::Relaxed를 지정해서 사용할 수 있습니다.
+일반적으로 하나의 아토믹 변수를 읽고 쓰는 상황에서는 std::sync::atomic::Ordering::Relaxed를 지정해서 사용할 수 있습니다.
 
 #### Memory Ordering에 대한 짧은 소개
 
