@@ -39,16 +39,39 @@ Arc의 메뉴얼을 보시면 가변 레퍼런스를 반환하는 get_mut 메소
 
 ### 기본 자료형을 공유할 수 있는 Atomic 타입
 
+usize, i32등 기본 자료형을 공유하는데 사용하는 아토믹 타입은 AtomicUSize, AtomicI32 등이 있습니다.
+다음과 같은 단계로 아토믹 변수의 공유 객체를 생성해서 사용할 수 있습니다.
+1. AtomicUsize::new 등 new 메소드를 이용해서 아토믹 변수를 만듭니다.
+2. 쓰레드간 공유를 위해서 Arc::new 메소드를 이용해서 아토믹 변수를 공유하기 위한 Arc 객체를 만듭니다.
+3. Arc의 clone 메소드를 사용해서 각 쓰레드에 Arc 객체를 전달합니다.
+4. Arc타입 변수에 아토믹 타입의 메소드 store, load등을 그대로 사용합니다.
+
+```rust
+fn main() {
+    let atomic_usize = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(1));
+    let arc_usize = std::sync::Arc::clone(&atomic_usize);
+
+    arc_usize.store(0, std::sync::atomic::Ordering::Relaxed);
+    assert_eq!(arc_usize.load(std::sync::atomic::Ordering::Relaxed), 0);
+}
+```
+
+주의해야할 것은 store, load 등의 메소드에 메모리 오더링을 위한 std::sync::atomic::Ordering 타입을 전달한다는 것입니다.
+일반적인 상황에서는 std::sync::atomic::Ordering::Relaxed를 지정해서 사용할 수 있습니다.
+
+#### 메모리 오더링의 기본 개념
+
+Memory Ordering
+Relaxed...
+
+
 
 ### Mutex
 
 
 ### Channel
 
-### 메모리 오더링의 기본 개념
 
-Memory Ordering
-Relaxed...
 
 ## Thread를 사용하기 위해 필요한 트레이트
 
