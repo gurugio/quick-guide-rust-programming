@@ -289,6 +289,44 @@ SeqCst는 메모리 접근에 대한 최적화를 모두 없애는 것입니다.
 
 ### Mutex
 
+뮤텍스는 말 그대로 하나의 쓰레드만 공유 데이터에 접근하도록 해주는 락입니다.
+그런데 사용법이 여러 프로그래밍 언어들과 차이가 있습니다.
+대부분의 프로그래밍 언어들은 공유할 데이터를 만들고, 해당 데이터를 위한 뮤텍스를 따로 만든 후, 뮤텍스를 잠그고 데이터에 접근합니다.
+하지만 러스트의 뮤텍스는 공유할 데이터와 따로 존재하는게 아닙니다.
+뮤텍스를 만들 때 뮤텍스 내부에 데이터를 저장합니다.
+아래 예제를 보면 뮤텍스를 만드는 new 메소드에 데이터의 소유권을 넘기는 것을 볼 수 있습니다.
+
+```rust
+use std::sync::{Arc, Mutex, MutexGuard};
+
+fn main() {
+    let data: usize = 0;
+    let data_lock = Mutex::new(data);
+    let data_lock_share = Arc::new(data_lock);
+
+    println!("Original data is {}", data);
+
+    let data_thr1 = data_lock_share.clone();
+    {
+        // Thread-1
+        let mut data: MutexGuard<usize> = data_thr1.lock().unwrap();
+        *data = 1;
+        println!("Thread-1: data is {}", *data);
+        // The lock is unlocked automatically
+    }
+
+    let data_thr2 = data_lock_share.clone();
+    {
+        // Thread-2
+        let mut data: MutexGuard<usize> = data_thr2.lock().unwrap();
+        *data = 2;
+        println!("Thread-2: data is {}", data);
+        // The lock is unlocked automatically
+    }
+}
+```
+
+
 
 ### Channel
 
