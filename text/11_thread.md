@@ -343,6 +343,52 @@ fn main() {
 이렇게 락도 아니고 공유 데이터도 아닌 새로운 타입을 만들어서 자동으로 락이 해지되도록하는 기법을 Resource Acquisition Is Initialization (RAII) 패턴이라고 부릅니다.
 MutexGuard라는 객체가 생성되고 소멸되는 시점에 락이 잠기고 풀어지도록해서 락을 불필요하게 오래 잡고있거나, 락을 해지하지 않는 버그를 미리 방지하는 것입니다.
 
+러스트에서 락을 사용하는 것만큼 중요한게 락을 사용하던 쓰레드가 락을 잠근 채로 죽어서 다른 쓰레드가 락을 사용하지 못하도록 만드는 Lock Poisoning 문제입니다.
+다음 예제 처럼 Thread-1에서 락을 잡고 사용하다가 어떤 오류로 인해 쓰레드가 죽었다고 생각해보겠습니다.
+
+```rust
+use std::sync::{Arc, Mutex, MutexGuard};
+
+fn main() {
+    let data: usize = 0;
+    let data_lock = Mutex::new(data);
+    let data_lock_share = Arc::new(data_lock);
+
+    println!("Original data is {}", data);
+
+    let data_thr1 = data_lock_share.clone();
+    {
+        // Thread-1
+        let mut data: MutexGuard<usize> = data_thr1.lock().unwrap();
+        panic!();
+        // The lock is not unlocked
+    }
+
+    let data_thr2 = data_lock_share.clone();
+    {
+        // Thread-2
+        let mut data = match data_thr2.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+
+        *data = 2;
+        println!("Thread-2: data is {}", data);
+        // The lock is unlocked automatically
+    }
+}
+```
+
+이전 예제에서는 Thread-2에서 lock메소드의 반환값을 따로 확인하지 않았습니다만 이번 예제에서는 lock 메소드의 반환값이 정상인지 에러인지를 확인합니다.
+정상이라면 data에는 MutexGuard타입의 객체가 저장될 것입니다.
+하지만 에러가 발생했다면 어디에선가 락을 해지하지 않는 에러가 발생한 것이므로 에러 값을 받고, 그 에러값을 into_inner 메소드로 MutexGuard 타입으로 바꿔서 계속 데이터를 사용하게 됩니다.
+그러면 락을 풀지 않은 에러가 발생했더라도, 다른 쓰레드에서 락을 계속 사용하고 락을 풀어줄 수 있으므로 더 이상 에러가 전파되는 일이 없습니다.
+
+참고로 위 예제에서 poisoned 변수의 타입은 PoisonError 타입이고, 이 타입에서 into_inner 메소드를 구현한 것입니다.
+into_inner 메소드는 에러 값을 소모(consume)시키고 원래 공유 데이터를 반환하는 일을 합니다.
+
+제품에 들어가는 코드를 만들 때는 반드시 이런 Lock Poisioning 에러에 대한 방지 코드를 작성하도록 주의하시기 바랍니다.
+
 ### Channel
 
 
