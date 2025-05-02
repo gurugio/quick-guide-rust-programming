@@ -432,13 +432,87 @@ fn main() {
 우리가 멀티쓰레드를 활용하는 경우가 대부분 여러 쓰레드에서 처리를 하고, 결과를 하나의 쓰레드나 메인 프로세스에서 받는 경우이거나, 메인 프로세스에서 명령을 입력받아서 여러 쓰레드레 동작을 지시하는 경우입니다.
 그래서 표준 크레이트에 MPSC 채널을 넣어준것 같습니다.
 
-## Thread를 사용하기 위해 필요한 트레이트
-
-Send
-Sync
-Copy는 안되는 이유
-
 ## Thread 생성 방법
+
+이제 쓰레드를 만들어보겠습니다.
+
+
+```rust
+use std::{thread, time};
+
+fn main() {
+    let handle = thread::spawn(|| {
+        let onesecond = time::Duration::from_millis(1000);
+
+        for i in 0..5 {
+            println!("In thread {}", i);
+            thread::sleep(onesecond);
+        }
+    });
+
+    let _ = handle.join();
+}
+```
+
+```rust
+use std::{thread, time};
+
+fn thread_func() {
+    let onesecond = time::Duration::from_millis(1000);
+
+    for i in 0..5 {
+        println!("In thread {}", i);
+        thread::sleep(onesecond);
+    }
+}
+fn main() {
+    let handle = thread::spawn(thread_func);
+    let _ = handle.join();
+}
+
+```
+
+
+move 키워드에 대해서
+
+```rust
+use std::{thread, time};
+
+struct Counter {
+    sleep: i32,
+}
+
+fn thread_func(c: Counter) {
+    let onesecond = time::Duration::from_millis(1000);
+
+    for i in 0..c.sleep {
+        println!("In thread {}", i);
+        thread::sleep(onesecond);
+    }
+}
+
+fn thread_func_with_ref(c: &Counter) {
+    let onesecond = time::Duration::from_millis(1000);
+
+    for i in 0..c.sleep {
+        println!("In thread {}", i);
+        thread::sleep(onesecond);
+    }
+}
+
+fn main() {
+    let counter = Counter { sleep: 5 };
+    let handle = thread::spawn(|| thread_func(counter)); // No need move keyword
+                                                         // println!("{}", counter.sleep);
+    let _ = handle.join();
+
+    let counter = Counter { sleep: 5 };
+    let handle = thread::spawn(move || thread_func_with_ref(&counter)); // Must have the move keyworkd
+    let _ = handle.join();
+}
+```
+
+
 
 Mutex, Arc를 이용한 쓰레드 생성 예제
 
@@ -477,6 +551,41 @@ for _ in 0..N {
 
 rx.recv().unwrap();
 ```
+
+### Thread를 사용하기 위해 필요한 트레이트
+
+spawn 메소드에 사용하는 클로저나 함수는 Send 트레이트를 구현해야함
+클로저나 함수에서 사용하는 모든 데이터 타입도 Send 트레이트를 구현해야함
+
+```rust
+pub fn spawn<F, T>(f: F) -> JoinHandle<T>
+where
+    F: FnOnce() -> T + Send + 'static,
+    T: Send + 'static,
+```
+
+Send
+Sync
+
+```
+Types for which it is safe to share references between threads.
+
+This trait is automatically implemented when the compiler determines it’s appropriate.
+
+The precise definition is: a type T is Sync if and only if &T is Send. In other words, if there is no possibility of undefined behavior (including data races) when passing &T references between threads.
+
+As one would expect, primitive types like u8 and f64 are all Sync, and so are simple aggregate types containing them, like tuples, structs and enums. More examples of basic Sync types include “immutable” types like &T, and those with simple inherited mutability, such as Box<T>, Vec<T> and most other collection types. (Generic parameters need to be Sync for their container to be Sync.)
+
+A somewhat surprising consequence of the definition is that &mut T is Sync (if T is Sync) even though it seems like that might provide unsynchronized mutation. The trick is that a mutable reference behind a shared reference (that is, & &mut T) becomes read-only, as if it were a & &T. Hence there is no risk of a data race.
+
+A shorter overview of how Sync and Send relate to referencing:
+
+&T is Send if and only if T is Sync
+&mut T is Send if and only if T is Send
+&T and &mut T are Sync if and only if T is Sync
+```
+
+Copy는 안되는 이유
 
 ### Thread의 결과값을 받는 방법
 
