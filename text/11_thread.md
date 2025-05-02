@@ -49,10 +49,10 @@ usize, i32등 기본 자료형을 공유하는데 사용하는 아토믹 타입�
 ```rust
 fn main() {
     let atomic_usize = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(1));
-    let arc_usize = std::sync::Arc::clone(&atomic_usize);
+    let arc_usize = atomic_usize.clone();
 
     arc_usize.store(0, std::sync::atomic::Ordering::Relaxed);
-    assert_eq!(arc_usize.load(std::sync::atomic::Ordering::Relaxed), 0);
+    assert_eq!(atomic_usize.load(std::sync::atomic::Ordering::Relaxed), 0);
 }
 ```
 
@@ -103,6 +103,8 @@ fn main() {
 컴파일러가 변수를 사용하기 직전에 어떤 상태가 되어야하는지를 잘 판단할 수 있기 때문입니다.
 하지만 2개 이상의 쓰레드에서 여러 아토믹 변수의 값을 읽고 쓸 때는 메모리의 접근 순서가 중요해집니다.
 가장 흔하게 볼 수 있는 예제가 다음과 같이 어떤 플래그의 값에 따라서 동작하는 경우입니다.
+
+쓰레드를 생성하는 std::thread::spawn 함수에 대해서는 다음에 자세하게 이야기하겠습니다.
 
 ```rust
 use std::sync::Arc;
@@ -478,8 +480,88 @@ fn main() {
 
 ```
 
+그런데 우리가 만든 쓰레드는 부족한게 있습니다.
+쓰레드에 데이터를 전달하지 못하고 있습니다.
+그래서 다음과 같이 데이터를 넘겨봤습니다.
 
-move 키워드에 대해서
+```rust
+use std::{thread, time};
+
+struct Counter {
+    sleep: i32,
+}
+
+fn thread_func(c: Counter) {
+    let onesecond = time::Duration::from_millis(1000);
+
+    for i in 0..c.sleep {
+        println!("In thread {}", i);
+        thread::sleep(onesecond);
+    }
+}
+
+fn main() {
+    let counter = Counter { sleep: 5 };
+    let handle = thread::spawn(|| thread_func(counter)); // No need move keyword
+                                                         // println!("{}", counter.sleep);
+    let _ = handle.join();
+}
+```
+
+러스트의 소유권을 다시 한번 생각해보겠습니다.
+counter라는 객체를 만들었고, 그 값을 그대로 thread_func에게 전달했습니다.
+소유권이 쓰레드 함수로 전달되었으니 문제가 없이 잘 동작합니다.
+
+그럼 다음과 같이 소유권이 이동하지 않는 경우는 어떨까요?
+다음 예제는 쓰레드 함수가 레퍼런스를 인자로 받습니다.
+그래서 소유권이 쓰레드 함수로 넘어가지 않고 계속 main 함수에게 있습니다.
+
+```rust
+use std::{thread, time};
+
+struct Counter {
+    sleep: i32,
+}
+
+fn thread_func_with_ref(c: &Counter) {
+    let onesecond = time::Duration::from_millis(1000);
+
+    for i in 0..c.sleep {
+        println!("In thread {}", i);
+        thread::sleep(onesecond);
+    }
+}
+
+fn main() {
+    let counter = Counter { sleep: 5 };
+    let handle = thread::spawn(|| thread_func_with_ref(&counter));
+    let _ = handle.join();
+}
+```
+```bash
+error[E0373]: closure may outlive the current function, but it borrows `counter`, which is owned by the current function
+  --> src/main.rs:18:32
+   |
+18 |     let handle = thread::spawn(|| thread_func_with_ref(&counter));
+   |                                ^^                       ------- `counter` is borrowed here
+   |                                |
+   |                                may outlive borrowed value `counter`
+   |
+note: function requires argument type to outlive `'static`
+  --> src/main.rs:18:18
+   |
+18 |     let handle = thread::spawn(|| thread_func_with_ref(&counter));
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: to force the closure to take ownership of `counter` (and any other referenced variables), use the `move` keyword
+   |
+18 |     let handle = thread::spawn(move || thread_func_with_ref(&counter));
+   |                                ++++
+```
+
+에러 메세지를 보면 쓰레드가 실행하는 함수가 counter 객체의 참조를 가지고 있는데, counter 객체의 소유권을 가진 main 함수보다 더 오래 존재할 수도 있다고 합니다.
+그리고 소유권을 완전히 넘기기 위해서 move라는 키워드를 사용하도록 안내하고 있습니다.
+move 키워드는 spawn에서 실행되는 클로저가 사용하는 변수들의 소유권을 모두 클로저에게 넘긴다는 키워드입니다.
+아래와 같이 move키워드를 사용하면 counter라는 변수가 사용되었으면 비록 레퍼런스를 사용했다고 하더라도 소유권을 넘기게 됩니다.
 
 ```rust
 use std::{thread, time};
@@ -509,7 +591,6 @@ fn thread_func_with_ref(c: &Counter) {
 fn main() {
     let counter = Counter { sleep: 5 };
     let handle = thread::spawn(|| thread_func(counter)); // No need move keyword
-                                                         // println!("{}", counter.sleep);
     let _ = handle.join();
 
     let counter = Counter { sleep: 5 };
@@ -518,8 +599,69 @@ fn main() {
 }
 ```
 
+소유권이 넘겨졌으니 쓰레드를 생성한 이후에는 main함수에서 counter 객체를 사용하면 안된다는 것은 이제 잘 아시리라 생각합니다.
 
+그럼 이제 쓰레드 생성 방법을 알았으니 지금까지 쓰레드를 생성하지 않고 만들었던 예제들을 쓰레드를 생성하도록 다시 구현해보겠습니다.
 
+가장 먼저 아토믹 변수를 사용하는 예제를 고쳐보겠습니다.
+
+```rust
+use std::sync::{atomic, Arc};
+use std::thread;
+
+fn main() {
+    let atomic_usize = Arc::new(atomic::AtomicUsize::new(1));
+    let arc_usize = atomic_usize.clone();
+    let handle = thread::spawn(move || {
+        arc_usize.store(0, atomic::Ordering::Relaxed);
+        println!("Thread set 0");
+    });
+    let _ = handle.join();
+    assert_eq!(atomic_usize.load(atomic::Ordering::Relaxed), 0);
+}
+```
+
+쓰레드를 1개 만들어서 아토믹 변수의 값을 0로 바꾸고 있습니다.
+다음과 같이 여러개의 쓰레드를 만들어서 아토믹 변수를 사용할 수도 있습니다.
+
+```rust
+use std::sync::{atomic, Arc};
+use std::thread;
+
+fn main() {
+    let atomic_usize = Arc::new(atomic::AtomicUsize::new(0));
+    let mut handles = Vec::new();
+    let count = 10;
+    for i in 1..=count {
+        let arc_usize = atomic_usize.clone();
+        handles.push(thread::spawn(move || {
+            arc_usize.fetch_add(i, atomic::Ordering::Relaxed);
+            println!("Thread adds {}", i);
+        }));
+    }
+
+    for h in handles {
+        let _ = h.join();
+    }
+
+    assert_eq!(atomic_usize.load(atomic::Ordering::Relaxed), 55);
+}
+```
+
+```bash
+Thread adds 4
+Thread adds 5
+Thread adds 1
+Thread adds 2
+Thread adds 7
+Thread adds 6
+Thread adds 3
+Thread adds 9
+Thread adds 8
+Thread adds 10
+```
+
+------------------------------------------------------------------------------------------------------------------------------------------
 Mutex, Arc를 이용한 쓰레드 생성 예제
 
 ```rust
