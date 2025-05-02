@@ -477,7 +477,6 @@ fn main() {
     let handle = thread::spawn(thread_func);
     let _ = handle.join();
 }
-
 ```
 
 그런데 우리가 만든 쓰레드는 부족한게 있습니다.
@@ -741,7 +740,112 @@ fn main() {
 메인 쓰레드는 10개의 쓰레드가 다 종료될 때까지 기다릴 필요가 없습니다.
 단지 채널에서 데이터가 도착하는 대로 출력합니다.
 
+## Thread의 결과값을 받는 방법
+
+쓰레드 핸들러의 join 메소드가 반환하는 값이 쓰레드 함수의 반환 값입니다.
+우선 join 메소드가 어떤 값을 반환하는지 메뉴얼을 보겠습니다.
+
+https://doc.rust-lang.org/std/thread/struct.JoinHandle.html#method.join
+```rust
+pub fn join(self) -> Result<T>
+```
+
+Result 타입을 반환하는 것처럼 보이는데, 사실은 우리가 보통 사용하는 Result(https://doc.rust-lang.org/std/result/)가 아니라 std::thread::Result (https://doc.rust-lang.org/std/thread/type.Result.html) 타입을 반환하는 것입니다.
+std::thread::Result는 다음과 같이 구현되어있습니다.
+```rust
+pub type Result<T> = Result<T, Box<dyn Any + Send + 'static>>;
+```
+
+std::thread::Result에서 에러 값은 쓰레드에서 패닉이 발생했을 때의 에러 값을 가집니다.
+그리고 T에는 쓰레드가 반환한 값이 들어갑니다.
+쓰레드가 Ok타입을 반환했건 Err타입을 반환했건 상관없이 join이 반환하는 정상 값에는 쓰레드의 값이 들어갑니다.
+약간 헷갈릴 수 있는데 다음 예제를 보면 쓰레드가 패닉을 일으켰을 때, Ok 타입을 반환했을 때, Err 타입을 반환했을 때 모든 경우에 대한 처리를 볼 수 있습니다.
+
+```
+use std::thread;
+
+#[derive(Debug)]
+struct MyThreadError {
+    message: String,
+}
+
+fn thread_func(v: i32) -> Result<i32, MyThreadError> {
+    if v < 0 {
+        panic!("Cannot accept negative value");
+    }
+    if v == 0 {
+        let myerror = MyThreadError {
+            message: "OOPS, thread failed".to_owned(),
+        };
+        return Err(myerror);
+    } else {
+        Ok(v + 1)
+    }
+}
+
+fn main() {
+    let handle = thread::spawn(|| thread_func(1));
+    let ret = handle.join();
+    match ret {
+        Ok(r) => match r {
+            Ok(v) => println!("Thread returned a value {}", v),
+            Err(e) => println!("Thread returned an error {}", e.message),
+        },
+        Err(e) => println!("Thread panic!: {:?}", e),
+    }
+
+    let handle = thread::spawn(|| thread_func(0));
+    let ret = handle.join();
+    match ret {
+        Ok(r) => match r {
+            Ok(v) => println!("Thread returned a value {}", v),
+            Err(e) => println!("Thread returned an error {}", e.message),
+        },
+        Err(e) => println!("Thread panic!: {:?}", e),
+    }
+
+    let handle = thread::spawn(|| thread_func(-1));
+    let ret = handle.join();
+    match ret {
+        Ok(r) => match r {
+            Ok(v) => println!("Thread returned a value {}", v),
+            Err(e) => println!("Thread returned an error {}", e.message),
+        },
+        Err(e) => println!("Thread panic!: {:?}", e),
+    }
+}
+```
+```bash
+Thread returned a value 2
+Thread returned an error OOPS, thread failed
+thread '<unnamed>' panicked at src/main.rs:10:9:
+Cannot accept negative value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Thread panic!: Any { .. }
+```
+
+첫번째 쓰레드는 1이라는 양수를 받았으므로 2를 반환합니다.
+두번째 쓰레드는 0을 받았으므로 에러를 반환합니다.
+Err 타입에 MyThreadError를 포함해서 반환하므로 쓰레드가 반환한 에러 값을 확인할 수 있습니다.
+하지만 어쨌든 쓰레드가 정상적으로 종료되었으므로 join 메소드의 반환값중에 Ok타입에서 쓰레드의 반환값을 꺼낼 수 있습니다.
+첫번째 두번째 쓰레드의 반환값은 join의 반환값에서 Ok타입의 값에서 꺼낼 수 있습니다.
+그렇게 한번 꺼낸 값에서 또 다시 Ok타입인지 Err타입인지를 확인하면, 그 값이 쓰레드의 반환값입니다.
+
+세번째 쓰레드는 음수를 받고 패닉을 발생했습니다.
+바로 이때 join 메소드가 에러를 반환하는 것입니다.
+
+join 메소드의 반환값을 위해 match를 두번 사용해야하는 것이 특이합니다만 쓰레드가 에러를 반환하는 경우부터 쓰레드가 에러를 반환하지 못하고 패닉을 일으키는 경우까지 모두 직관적으로 처리할 수 있으므로 편리합니다.
+
 ### Thread를 사용하기 위해 필요한 트레이트
+
+Send, Sync, Any
+
+https://web.mit.edu/rust-lang_v1.25/arch/amd64_ubuntu1404/share/doc/rust/html/nomicon/send-and-sync.html
+
+https://www.reddit.com/r/rust/comments/1csrbhf/understanding_send_trait_in_rust/
+
+https://doc.rust-lang.org/nomicon/send-and-sync.html
+
 
 spawn 메소드에 사용하는 클로저나 함수는 Send 트레이트를 구현해야함
 클로저나 함수에서 사용하는 모든 데이터 타입도 Send 트레이트를 구현해야함
@@ -775,9 +879,3 @@ A shorter overview of how Sync and Send relate to referencing:
 ```
 
 Copy는 안되는 이유
-
-### Thread의 결과값을 받는 방법
-
-Result<쓰레드함수의반환값, Box<dyn Any + Send>>
-Trait Any에 대한 설명
-
