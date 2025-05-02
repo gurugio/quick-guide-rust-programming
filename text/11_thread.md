@@ -391,7 +391,46 @@ into_inner 메소드는 에러 값을 소모(consume)시키고 원래 공유 데
 
 ### Channel
 
+채널은 쓰레드간에 데이터를 주고 받는데 아주 편리한 툴입니다.
+기본적으로 여러 쓰레드가 데이터를 보내고, 하나의 쓰레드가 데이터를 받는 Multi Producer Single Consumer (MPSC) 방식으로 동작합니다.
+물론 반대로 Single Producer Multi Consumer 동작을 지원하는 크레이트도 있습니다.
+우리는 표준 크레이트에 들어있는 mpsc 채널의 사용법을 알아보겠습니다.
+SPMC 채널 크레이트의 사용법은 MPSC 채널과 동일하므로 사용법은 완전히 동일하므로 따로 설명하지 않겠습니다.
 
+사용법은 아주 간단합니다.
+채널을 생성하면 전송 객체 (Producer)와 수신 객체 (Consumer)가 생성됩니다.
+여러 쓰레드가 전송을 할 것이므로, 각 쓰레드는 전송 객체의 클론을 받아서 사용합니다.
+데이터를 받는 쓰레드는 유일하므로 별다른 처리없이 recv 메소드만 호출하면 데이터를 받게됩니다.
+
+```rust
+use std::sync::mpsc::{channel, Sender};
+
+fn main() {
+    let (sender, receiver) = channel();
+
+    let sender_thr1: Sender<i32> = sender.clone();
+    {
+        // Thread-1
+        sender_thr1.send(1).unwrap();
+    }
+
+    let sender_thr2: Sender<i32> = sender.clone();
+    {
+        // Thread-2
+        sender_thr2.send(2).unwrap();
+    }
+
+    for _ in 0..2 {
+        let t: i32 = receiver.recv().unwrap();
+        println!("Main received {}", t);
+    }
+}
+```
+
+아직 쓰레드의 사용법을 알아보지 않았으므로 쓰레드 생성없이 데이터를 주고 받는 예제를 만들어봤습니다.
+채널은 아주 간단하게 데이터를 주고받을 수 있도록 잘 구현된 크레이트이므로 최대한 활용하시는게 좋습니다.
+우리가 멀티쓰레드를 활용하는 경우가 대부분 여러 쓰레드에서 처리를 하고, 결과를 하나의 쓰레드나 메인 프로세스에서 받는 경우이거나, 메인 프로세스에서 명령을 입력받아서 여러 쓰레드레 동작을 지시하는 경우입니다.
+그래서 표준 크레이트에 MPSC 채널을 넣어준것 같습니다.
 
 ## Thread를 사용하기 위해 필요한 트레이트
 
