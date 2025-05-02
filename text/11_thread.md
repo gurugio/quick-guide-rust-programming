@@ -314,7 +314,7 @@ fn main() {
     {
         // Thread-1
         let mut data: MutexGuard<usize> = data_thr1.lock().unwrap();
-        *data = 1;
+        *data += 1;
         println!("Thread-1: data is {}", *data);
         // The lock is unlocked automatically
     }
@@ -323,7 +323,7 @@ fn main() {
     {
         // Thread-2
         let mut data: MutexGuard<usize> = data_thr2.lock().unwrap();
-        *data = 2;
+        *data -= 1;
         println!("Thread-2: data is {}", data);
         // The lock is unlocked automatically
     }
@@ -647,7 +647,6 @@ fn main() {
     assert_eq!(atomic_usize.load(atomic::Ordering::Relaxed), 55);
 }
 ```
-
 ```bash
 Thread adds 4
 Thread adds 5
@@ -661,44 +660,86 @@ Thread adds 8
 Thread adds 10
 ```
 
-------------------------------------------------------------------------------------------------------------------------------------------
-Mutex, Arc를 이용한 쓰레드 생성 예제
+아토믹 변수의 fetch_add 메소드는 아토믹하게 값을 증가시키고 아토믹 변수의 값이 증가되기전의 값을 반환하는 메소드입니다.
+이 예제에서는 값이 증가시키기만 하므로 반환값을 사용하지 않았습니다. 
+
+그 다음으로 뮤텍스를 사용해서 여러 쓰레드가 공유 데이터를 읽고 쓰는 예제를 만들어보겠습니다.
+이전에 만들었던 뮤텍스 사용 예제에 쓰레드 생성만 추가한 것입니다.
 
 ```rust
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use std::thread;
-use std::sync::mpsc::channel;
 
-const N: usize = 10;
+fn main() {
+    // let data_lock_share = Arc::new(Mutex::new(0));
+    let data: usize = 0;
+    let data_lock = Mutex::new(data);
+    let data_lock_share = Arc::new(data_lock);
+    let count = 10;
+    let mut handles = Vec::new();
 
-// Spawn a few threads to increment a shared variable (non-atomically), and
-// let the main thread know once all increments are done.
-//
-// Here we're using an Arc to share memory among threads, and the data inside
-// the Arc is protected with a mutex.
-let data = Arc::new(Mutex::new(0));
+    println!("Original data is {}", data);
 
-let (tx, rx) = channel();
-for _ in 0..N {
-    let (data, tx) = (data.clone(), tx.clone());
-    thread::spawn(move || {
-        // The shared state can only be accessed once the lock is held.
-        // Our non-atomic increment is safe because we're the only thread
-        // which can access the shared state when the lock is held.
-        //
-        // We unwrap() the return value to assert that we are not expecting
-        // threads to ever fail while holding the lock.
-        let mut data = data.lock().unwrap();
-        *data += 1;
-        if *data == N {
-            tx.send(()).unwrap();
-        }
-        // the lock is unlocked here when `data` goes out of scope.
-    });
+    for i in 0..count {
+        let lock = data_lock_share.clone();
+        handles.push(thread::spawn(move || {
+            let mut data: MutexGuard<usize> = lock.lock().unwrap();
+            *data += 1;
+            println!("Thread-{}: data is {}", i, data);
+            // The lock is unlocked automatically
+        }));
+    }
+
+    for i in 0..count {
+        let lock = data_lock_share.clone();
+        handles.push(thread::spawn(move || {
+            // Thread-2
+            let mut data: MutexGuard<usize> = lock.lock().unwrap();
+            *data -= 1;
+            println!("Thread-{}: data is {}", i, data);
+            // The lock is unlocked automatically
+        }));
+    }
+
+    for h in handles {
+        let _ = h.join();
+    }
+
+    assert_eq!(data, 0);
 }
-
-rx.recv().unwrap();
 ```
+
+10개의 쓰레드는 공유 값을 1씩 증가시키고, 10개의 쓰레드는 1씩 감소시킵니다
+모든 쓰레드가 종료된 후에는 공유 값이 0이어야 합니다.
+
+다음으로 여러 쓰레드가 채널을 사용하는 예제를 만들어보겠습니다.
+마찬가지로 이전에 만든 채널 사용 예제에 쓰레드 생성만 추가한 것입니다.
+
+```rust
+use std::sync::mpsc::{channel, Sender};
+use std::thread;
+
+fn main() {
+    let (sender, receiver) = channel();
+    let count = 10;
+    let mut handles = Vec::new();
+
+    for i in 0..count {
+        let s: Sender<i32> = sender.clone();
+        handles.push(thread::spawn(move || {
+            s.send(i).unwrap();
+        }));
+    }
+    for _ in 0..count {
+        let t: i32 = receiver.recv().unwrap();
+        println!("Main received {}", t);
+    }
+}
+```
+
+10개의 쓰레드가 동시에 채널에 데이터를 전송합니다.
+메인 쓰레드는 10개의 쓰레드가 다 종료될 때까지 기다릴 필요가 없습니다.
+단지 채널에서 데이터가 도착하는 대로 출력합니다.
 
 ### Thread를 사용하기 위해 필요한 트레이트
 
