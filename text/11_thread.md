@@ -838,44 +838,134 @@ join 메소드의 반환값을 위해 match를 두번 사용해야하는 것이 
 
 ## Thread를 사용하기 위해 필요한 트레이트
 
-Send, Sync, Any
-
-https://web.mit.edu/rust-lang_v1.25/arch/amd64_ubuntu1404/share/doc/rust/html/nomicon/send-and-sync.html
-
-https://www.reddit.com/r/rust/comments/1csrbhf/understanding_send_trait_in_rust/
-
-https://doc.rust-lang.org/nomicon/send-and-sync.html
-
-
-spawn 메소드에 사용하는 클로저나 함수는 Send 트레이트를 구현해야함
-클로저나 함수에서 사용하는 모든 데이터 타입도 Send 트레이트를 구현해야함
+쓰레드를 사용하려면 쓰레드에 객체를 주고, 쓰레드로부터 결과값을 받아야 합니다.
+만약에 다음 예제처럼 Raw Pointer가 들어간 데이터를 쓰레드에 전달해야되는 경우도 문제가 없을지 한번 생각해보겠습니다. 
 
 ```rust
-pub fn spawn<F, T>(f: F) -> JoinHandle<T>
-where
-    F: FnOnce() -> T + Send + 'static,
-    T: Send + 'static,
+use std::sync::{Arc, Mutex};
+use std::{ptr, thread};
+
+#[derive(Debug)]
+struct MyData {
+    msg_ref: *const String,
+}
+
+fn thread_func(data: Arc<Mutex<MyData>>) {
+    unsafe {
+        println!("Do something with data:{}", *data.lock().unwrap().msg_ref);
+    }
+}
+
+fn main() {
+    let message = "This is a dummy data".to_owned();
+    let mut data = MyData {
+        msg_ref: ptr::null(),
+    };
+    data.msg_ref = &message;
+
+    let data_share = Arc::new(Mutex::new(data));
+    let data_share_thr1 = data_share.clone();
+    let handle = thread::spawn(move || thread_func(data_share_thr1));
+
+    let _ = handle.join();
+}
+```
+```bash
+$ cargo run
+   Compiling bin-example v0.1.0 (/Users/user/study/bin-example)
+error[E0277]: `*const String` cannot be sent between threads safely
+   --> src/main.rs:24:32
+    |
+24  |     let handle = thread::spawn(move || thread_func(data_share_thr1));
+    |                  ------------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `*const String` cannot be sent between threads safely
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: within `MyData`, the trait `Send` is not implemented for `*const String`, which is required by `{closure@src/main.rs:24:32: 24:39}: Send`
+note: required because it appears within the type `MyData`
+   --> src/main.rs:5:8
+    |
+5   | struct MyData {
+    |        ^^^^^^
+    = note: required for `Mutex<MyData>` to implement `Sync`
+    = note: required for `Arc<Mutex<MyData>>` to implement `Send`
+note: required because it's used within this closure
+   --> src/main.rs:24:32
+    |
+24  |     let handle = thread::spawn(move || thread_func(data_share_thr1));
+    |                                ^^^^^^^
+note: required by a bound in `spawn`
+   --> /Users/user/.rustup/toolchains/stable-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/thread/mod.rs:675:8
+    |
+672 | pub fn spawn<F, T>(f: F) -> JoinHandle<T>
+    |        ----- required by a bound in this function
+...
+675 |     F: Send + 'static,
+    |        ^^^^ required by this bound in `spawn`
+
+For more information about this error, try `rustc --explain E0277`.
 ```
 
-Send
-Sync
+지금까지 쓰레드를 설명하기 위해 사용한 예제에는 일반적인 객체나 레퍼런스만을 사용했지만, 이번 예제는 로우 포인터를 사용해서 러스트 컴파일러과 해당 포인터의 유효성을 검증할 수 없게 되었습니다.
+그래서 러스트 컴파일러는 개발자가 직접 MyData라는 타입이 생성된 쓰레드로부터 다른 쓰레드로 전달되거나, 여러 쓰레드간에 공유되어도 좋은지를 검증할 수 있는 장치를 제공하고 있습니다.
+그것이 바로 Send와 Sync 트레이트입니다.
+일단 위 예제를 제대로 동작시키기 위해 컴파일러 메세지에 설명하는 것과 같이 Send와 Sync 트레이트를 구현해주겠습니다.
 
+```rust
+use std::sync::{Arc, Mutex};
+use std::{ptr, thread};
+
+#[derive(Debug)]
+struct MyData {
+    msg_ref: *const String,
+}
+unsafe impl Send for MyData {}
+unsafe impl Sync for MyData {}
+
+fn thread_func(data: Arc<Mutex<MyData>>) {
+    unsafe {
+        println!("Do something with data:{}", *data.lock().unwrap().msg_ref);
+    }
+}
+
+fn main() {
+    let message = "This is a dummy data".to_owned();
+    let mut data = MyData {
+        msg_ref: ptr::null(),
+    };
+    data.msg_ref = &message;
+
+    let data_share = Arc::new(Mutex::new(data));
+    let data_share_thr1 = data_share.clone();
+    let handle = thread::spawn(move || thread_func(data_share_thr1));
+
+    let _ = handle.join();
+}
 ```
-Types for which it is safe to share references between threads.
-
-This trait is automatically implemented when the compiler determines it’s appropriate.
-
-The precise definition is: a type T is Sync if and only if &T is Send. In other words, if there is no possibility of undefined behavior (including data races) when passing &T references between threads.
-
-As one would expect, primitive types like u8 and f64 are all Sync, and so are simple aggregate types containing them, like tuples, structs and enums. More examples of basic Sync types include “immutable” types like &T, and those with simple inherited mutability, such as Box<T>, Vec<T> and most other collection types. (Generic parameters need to be Sync for their container to be Sync.)
-
-A somewhat surprising consequence of the definition is that &mut T is Sync (if T is Sync) even though it seems like that might provide unsynchronized mutation. The trick is that a mutable reference behind a shared reference (that is, & &mut T) becomes read-only, as if it were a & &T. Hence there is no risk of a data race.
-
-A shorter overview of how Sync and Send relate to referencing:
-
-&T is Send if and only if T is Sync
-&mut T is Send if and only if T is Send
-&T and &mut T are Sync if and only if T is Sync
+```bash
+$ cargo run
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running `target/debug/bin-example`
+Do something with data:This is a dummy data
 ```
 
-Copy는 안되는 이유
+Send와 Sync 트레이트는 이름에서 볼 수 있듯이 각각 다른 의미를 가지고 있습니다.
+* Send: 다른 쓰레드로 전송 가능
+* Sync: 여러 쓰레드가 공유 가능
+
+보통 뮤텍스로 공유해서 접근하는 데이터는 둘 다 구현해야하고, Arc로 전달만하는 데이터는 Send만 구현해도 동작합니다.
+그리고 Send와 Sync 트레이트를 구현하는 것은 실제로 어떤 코드를 작성하는게 아니라 위 예제처럼 빈 블럭으로 구현하는 것입니다.
+이와 같이 단지 어떤 특성이 있다는 것을 표시만 해주는 트레이트를 마크 트레이트 (Mark Trait)라고 부릅니다.
+러스트 컴파일러에게 Send 트레이트를 구현해줌으로서 이 객체는 다른 쓰레드로 전송해도 괜찮다는 것을 표시해주는 것입니다.
+
+그리고 위와 같이 Send와 Sync 구현은 unsafe 특성을 가집니다.
+이 두개의 트레이트를 구현해야하는 이유부터가 러스트 컴파일러가 직접 관리하지 못하는 로우 포인터를 사용하기 때문이므로 unsafe하기 때문입니다.
+
+참고로 *const String이 아니라 *mut String으로 mutable 특성이 달라져도 마찬가지로 Send와 Sync 구현이 필요합니다.
+그 외에 Rc나 RefCell, Cell 등의 타입을 쓰레드에 전달할 때도 Send와 Sync를 둘다 구현해야하거나 둘중 하나를 구현해야합니다만 Rc, RefCell, Cell은 모두 싱글 쓰레드에서만 사용하도록 만들어진 스마트 포인터입니다.
+만약 이 타입들을 멀티 쓰레드에서 사용하게된다면 프로그램 설계를 수정하는 것이 옳바른 방향일 것입니다.
+그 전에 동작 테스트를 위해서 사용할 수도 있기 때문에 말씀드립니다.
+
+그 외에 Any 트레이트도 나왔었습니다.
+간단하게 생각하면 Any 트레이트는 트레이트 객체임을 나타내는 트레이트입니다.
+만약 어떤 타입에 Any 트레이트가 필요하다는 표시가 있으면 트레이트 객체를 사용해주어야한다는 의미로 생각하면됩니다.
