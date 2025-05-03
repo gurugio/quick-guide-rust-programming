@@ -25,6 +25,61 @@
 ## async task 만들기
 
 비동기로 실행되는 태스크라는 것이 무엇인지 알아보기 위해 일단 가상의 태스크를 한번 만들어보겠습니다.
+비동기 태스크를 만들고 실행하기 위해서 가장 먼저 필요한 것은 tokio라는 크레이트를 추가하는 것입니다.
+아래와같이 `cargo add tokio --features=full` 명령으로 Cargo.toml에 추가할 수도 있고, 직접 Cargo.toml 파일에 입력해서 추가할 수도 있습니다.
+
+```
+$ cargo add tokio --features=full
+
+$ cat Cargo.toml
+[package]
+name = "example"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.44.2", features = ["full"] }
+```
+
+그리고 일단 다음 예제를 한번 실행해봅니다.
+
+```rust
+use std::time::Duration;
+
+async fn task_one() -> i32 {
+    println!("Start task-one");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    println!("Finish task-one");
+    1
+}
+
+async fn task_two() -> i32 {
+    println!("Start task-two");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    println!("Finish task-two");
+    2
+}
+
+#[tokio::main]
+async fn main() {
+    let v1 = task_one().await;
+    let v2 = task_two().await;
+    println!("v1={} v2={}", v1, v2);
+}
+```
+```bash
+ % cargo run
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running `target/debug/bin-example`
+Start task-one
+Finish task-one
+Start task-two
+Finish task-two
+v1=1 v2=2
+```
+
+
+
 
 ```rust
 use std::thread;
