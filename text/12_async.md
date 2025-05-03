@@ -55,7 +55,7 @@ Tokio는 비동기 태스크를 실행하기 위한 런타임 (Runtime)을 제�
 Tokio외에도 몇가지 런타임 구현체가 있습니다.
 하지만 최근에는 Tokio가 사실상 표준으로 자리잡았기 때문에 Tokio만 이야기하겠습니다.
 
-## async task 만들기
+## async 키워드와 await 키워드
 
 비동기로 실행되는 태스크라는 것이 무엇인지 알아보기 위해 일단 가상의 태스크를 한번 만들어보겠습니다.
 그리고 일단 다음 예제를 한번 실행해봅니다.
@@ -85,7 +85,9 @@ async fn main() {
     tokio::time::sleep(Duration::from_secs(1)).await;
 
     let v1 = future_one.await;
+    println!("task_one is finished");
     let v2 = future_two.await;
+    println!("task_two is finished");
     println!("v1={} v2={}", v1, v2);
 }
 ```
@@ -93,28 +95,69 @@ async fn main() {
  % cargo run
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
      Running `target/debug/bin-example`
+Futures are ready but not start yet
 Start task-one
 Finish task-one
+task_one is finished
 Start task-two
 Finish task-two
+task_two is finished
 v1=1 v2=2
 ```
 
-====----------------====----------------====----------------====----------------====----------------====----------------
+task_one과 task_two는 async 함수입니다.
+함수 선언부를 보면 async 키워드가 가장 앞에 있습니다.
+우리가 지금까지 함수를 호출하는 방식대로 생각해보면 take_one 함수가 호출된 후 task_two 함수가 호출됩니다.
+그리고 "Futures are ready but not start yet"이라는 메세지가 출력되어야 합니다.
+그런데 실행 결과를 보면 가장 먼저 실행되는 것이 "Futures are ready but not start yet" 메세지 출력입니다.
+그리고 task_one 함수가 실행되고 그 다음 task_two 함수가 실행됩니다.
+이로서 일단 async 키워드가 있는 비동기 함수는 실행되는 시점이 일반적인 동기 함수 (async 키워드가 없는 함수)와 전혀 다르다는 것을 알 수 있습니다.
+그리고 await라는 키워드가 비동기 함수의 실행과 연관이 있을 것이라는 짐작을 할 수 있습니다.
 
+가장 먼저 알아야 할 것은 비동기 함수 task_one이나 task_two를 호출하면 그 결과값은 `dyn Future<Output=i32>`이라는 것입니다.
+Future라는 트레이트를 구현한 트레이트 객체를 반환하는데 Output이라는 타입은 i32으로 정의된 트레이트 구현이라는 의미가 됩니다.
+참고로 future_one이라는 변수의 타입은 Opaque 타입입니다.
+사용자가 타입을 직접 지정할 수 없다는 의미입니다.
+`let future_one: dyn Future<Output=i32> = task_one();` 이렇게 타입을 직접 지정할 수 없습니다.
+future_one 변수와 future_two 변수는 타입을 직접 지정하지않고 사용할 수밖에 없습니다.
+물론 Tokio 내부적으로는 타입이 정의되어있을 것입니다.
+하지만 그 타입을 사용자가 볼 수 있도록 공개하지 않았으므로 우리는 위 예제와 같이 타입을 지정하지않고 사용할 수밖에 없습니다.
 
+어쨌든 비동기 함수를 호출하면 Future 트레이트의 트레이트 객체를 반환합니다.
+그리고 함수 자체는 실행을 시작하지 않습니다.
+비동기 함수가 실제로 실행을 시작하는 지점은 future_one변수에서 await 키워드가 사용될 때 입니다.
+참고로 await은 메소드가 아닙니다.
+그래서 함수 호출을 의미하는 ()가 없습니다.
 
-최대한 단순하게 태스크를 2개 만들었습니다.
-task_one이라는 함수가 비동기로 실행될 함수입니다.
-일반적으로 함수를 선언하는 fn이라는 키워드 앞에 async라는 키워드를 추가했습니다
-이 키워드가 함수를 비동기로 실행되도록 하는 함수입니다.
+await은 비동기 함수의 실행을 시작하는 것뿐 아니라 함수가 종료할 때까지 기다리는 역할도 합니다.
+그래서 예제를 실행하면 항상 "Finish task_one" 메세지가 출력된 후 "task_one is finished" 메세지가 출력됩니다.
+마찬가지로 task_two 함수가 반환한 future_two에 await 키워드가 사용되었고, "Finish task-two" 메세지가 출력된 후에 "task_two is finished" 메시지가 출력됩니다.
+비동기 프로그래밍을 이야기하고 있는데 사실 함수의 실행 시점만 조금 늦춰졌을 뿐, 전혀 비동기적으로 실행되는 부분이 없다는게 보이시나요?
+이 await 키워드를 사용하는 것은 태스크가 실행되고 종료될때까지 기다린다는 것이므로 사실 비동기적 프로그래밍은 아닙니다.
+단지 async 키워드를 사용한 비동기 함수를 특정 시점에 강제로 시작하고 반환값을 받아오는 기본적인 사용법을 설명한 것 뿐입니다.
 
-
-그리고 main함수를 보면 3가지 색다른게 보입니다.
+그 외에 main함수를 보면 3가지 색다른게 보입니다.
 
 1. `#[tokio::main]`: 이 매크로 속성은 tokio 크레이트에게 main함수에서 tokio가 비동기 태스크들을 실행할 수 있는 런타임을 실행할 것을 알려줍니다. main함수가 아닌 일반 함수가 런타임을 실행한다면 일반 함수에도 사용할 수 있는 속성입니다.
-2. `async fn main`: 비동기 함수를 실행하는 함수도 비동기 함수가 되어야합니다. await이라는 키워드가 비동기 함수를 실행시키는 키워드입니다. 
+2. `async fn main`: 비동기 함수를 실행하는 함수도 비동기 함수가 되어야합니다. 즉 await 키워드를 사용해서 비동기 함수를 실행시키는 함수는 자기 자신도 async 함수가 되어야합니다.
 
+예를 들어 단지 다음 함수는 비동기 함수가 될 필요가 없습니다.
+await 키워드로 비동기 함수를 실행시키지 않았기 때문입니다.
+```rust
+fn func_not_async() {
+    let future_one = task_one();
+}
+```
+하지만 다음 함수는 비동기 함수가 되어야합니다.
+```rust
+async fn func_async() {
+    task_one().await;
+}
+```
+
+## async 함수들을 async 하게 실행시키기
+
+========================================================================================================================
 
 ```rust
 use std::thread;
