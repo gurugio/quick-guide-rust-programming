@@ -1,4 +1,38 @@
 
+```rust
+use std::thread;
+use std::time::Duration;
+use tokio::time::sleep;
+
+async fn task_one() -> i32 {
+    println!("Start task-one");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    println!("Finish task-one");
+    1
+}
+
+async fn task_two() -> i32 {
+    println!("Start task-two");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    println!("Finish task-two");
+    2
+}
+
+#[tokio::main]
+async fn main() {
+    // 1. run each async task
+    let v1 = task_one().await;
+    let v2 = task_two().await;
+    println!("v1={} v2={}", v1, v2);
+
+    // 2. Run two async task concurrently
+    let one = task_one();
+    let two = task_two();
+    tokio::join!(one, two);
+    // How to get the return values?
+}
+
+```
 
 
 ```rust
