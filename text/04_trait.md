@@ -554,7 +554,7 @@ fn main() {
 $ cargo run --bin trait_partialeq_first
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.00s
      Running `target/debug/trait_partialeq_first`
-Yes, this book is writtend by Person { name: "Steve Klabnik", age: 30 }
+Yes, they are same book but different release 20190812 != 20230228.
 ```
 
 위와 같이 두 책이 같은 책인지 확인하려면 책 제목과 저자 이름을 확인하게 됩니다.
@@ -1271,7 +1271,7 @@ pub trait Iterator {
 
 메뉴얼에 따르면 필수로 구현해야할 next라는 메소드가 1개있고, next메소드를 구현하면 자동으로 제공되는 메소드가 74개있다고 합니다. 그렇게 총 75개의 메소드를 가지는 트레이트입니다. next메소드는 자기 자신을 mutable 참조로 받아서 Option에 감싼 결과 값 하나를 반환하게 됩니다. 우리가 해야할 일은 Item이라는 타입에 무엇을 쓸지 정해야합니다. 보통은 자신이 구현한 구조체나 구조체의 참조가 되겠지요. 그리고 주의해야할 것이 이터레이터가 현재 몇개의 값을 반환했는지, 그리고 더 이상 반환할 값이 있는지 없는지 등의 상태 관리를 해야된다는 것입니다. 그렇게 이터레이터가 가진 상태가 변하기때문에 &mut self라는 타입을 사용하는 것입니다.
 
-그럼 Book 타입의 객체들을 처리하기위한 BookSelf라는 이터레이터 타입을 구현해보겠습니다.
+그럼 Book 타입의 객체들을 처리하기위한 BookShelf라는 이터레이터 타입을 구현해보겠습니다.
 
 ```rust
 #[derive(Debug)]
@@ -1349,13 +1349,13 @@ Book { title: "The Return of the King", author: "J. R. R. Tolkien", published: 1
 
 일단 구현이 어떻게할지는 놔두고 main함수에서 어떻게 사용하는지부터 보겠습니다.
 
-book_array라는 이름의 배열을 만들어서 여러개의 Book 객체를 저장합니다. 그리고 mybooks_iter라는 변수를 만드는데 이 변수는 BookSelf타입이고 books라는 필드에 book_array의 참조 포인터를 저장합니다. mybooks_iter라는 변수가 이터레이터가 되는 것입니다. 이제부터 mybooks_iter의 next()라는 메소드를 호출할 때마다 배열에 저장된 Book 타입 객체들이 하나씩 반환되는 것입니다.
+book_array라는 이름의 배열을 만들어서 여러개의 Book 객체를 저장합니다. 그리고 mybooks_iter라는 변수를 만드는데 이 변수는 BookShelf타입이고 books라는 필드에 book_array의 참조 포인터를 저장합니다. mybooks_iter라는 변수가 이터레이터가 되는 것입니다. 이제부터 mybooks_iter의 next()라는 메소드를 호출할 때마다 배열에 저장된 Book 타입 객체들이 하나씩 반환되는 것입니다.
 
 또한 이터레이터를 for 루프에도 사용할 수 있습니다. mybooks_for라는 인터레이터를 만들어서 for 루프에 사용하면 next() 메소드를 자동으로 호출해줍니다.
 
-그럼 BookSelf라는 구조체는 어떻게 구현되었는지 볼까요. Book타입 배열의 참조 포인터를 가지고 있습니다. 그냥 배열의 시작 주소를 가지고 있는것 뿐입니다. 이것이 어떻게 이터레이터 역할을 할 수 있는지를 Iterator 트레이트 구현을 확인해야 알 수 있습니다.
+그럼 BookShelf라는 구조체는 어떻게 구현되었는지 볼까요. Book타입 배열의 참조 포인터를 가지고 있습니다. 그냥 배열의 시작 주소를 가지고 있는것 뿐입니다. 이것이 어떻게 이터레이터 역할을 할 수 있는지를 Iterator 트레이트 구현을 확인해야 알 수 있습니다.
 
-Iterator 구현을 보면 가장 먼저 볼 수 있는게 Item 타입은 Book객체의 참조 포인터라는 것입니다. 이것은 이터레이터가 next() 메소드를 호출하거나 for 루프에서 사용될때 반환하는 값의 타입이 Book 객체의 참조 포인터라는 것입니다. 그 다음을 보면 next() 메소드의 구현이 나옵니다. 메소드 인자는 &mut self로 우리가 만든 BookSelf 구조체 mutable 참조가 됩니다. 그리고 반환값인 Option<&Book>이 되겠지요. 구현은 생각보다 간단합니다. 우선 현재 self.books라는 배열을 첫번째 객체와 나머지로 쪼갭니다. 만약 잘 쪼개진다면 어쨌든 배열안에 데이터(Book객체에 대한 포인터)가 1개 이상 들어있다는 뜻이므로 첫번째 객체는 반환하고 나머지는 self.books에 저장합니다. 그런데 배열을 쪼개려고했는데 None이 반환되었다는 것은 self.books 배열에 아무런 데이터가 없다는 뜻이므로 None을 반환해주면 됩니다.
+Iterator 구현을 보면 가장 먼저 볼 수 있는게 Item 타입은 Book객체의 참조 포인터라는 것입니다. 이것은 이터레이터가 next() 메소드를 호출하거나 for 루프에서 사용될때 반환하는 값의 타입이 Book 객체의 참조 포인터라는 것입니다. 그 다음을 보면 next() 메소드의 구현이 나옵니다. 메소드 인자는 &mut self로 우리가 만든 BookShelf 구조체 mutable 참조가 됩니다. 그리고 반환값인 Option<&Book>이 되겠지요. 구현은 생각보다 간단합니다. 우선 현재 self.books라는 배열을 첫번째 객체와 나머지로 쪼갭니다. 만약 잘 쪼개진다면 어쨌든 배열안에 데이터(Book객체에 대한 포인터)가 1개 이상 들어있다는 뜻이므로 첫번째 객체는 반환하고 나머지는 self.books에 저장합니다. 그런데 배열을 쪼개려고했는데 None이 반환되었다는 것은 self.books 배열에 아무런 데이터가 없다는 뜻이므로 None을 반환해주면 됩니다.
 
 아마 다른 언어로 이터레이터를 만들어본 경험이 있으시다면 쉽게 익숙해질 수 있을거라 생각합니다. 단지 주의해야할 것은 반환값은 Option이므로 더이상 데이터가 없을때 None을 호출해야한다는 것입니다.
 
