@@ -280,85 +280,109 @@ Finish task-one
 Async-sleep: 5 seconds
 ```
 
+첫번째로 std::thread::sleep을 사용했을 때 2개의 비동기 함수를 실행한 총 시간이 10초가 나왔습니다
+그 다음으로 tokio::time::sleep을 사용하면 5초가 걸립니다.
+그리도 또 다른 차이도 있습니다.
+std::thread::sleep를 사용하면 2개의 비동기 함수를 join 매크로를 이용해서 호출했음에도 불구하고 비동기로 실행된게 아니라 순서대로 실행되고 있습니다.
+"Finish task-one" 메세지가 출력된 후에 "Start task-two" 메세지가 출력되는 것을 보면 2개의 비동기 함수가 동시에 실행되는 것이 아님을 알 수 있습니다.
+왜 이런 차이가 생길까요?
+왜 굳이 std::thread:sleep라는 시간 대기 함수가 있는데도 tokio에서는 따로 같은 일을 하는 함수를 제공하고 있는걸까요?
 
-========================================================================================================================
+근본적인 차이점을 이야기하자면 std::thread:sleep은 쓰레드의 슬립이라는 이름과 같이 현재 쓰레드의 실행을 중단합니다.
+그리고 tokio::time:sleep은 현재 쓰레드나 비동기 태스크의 실행을 중단하지 않고, 비동기 블럭(함수)의 실행만 중단합니다.
+하나의 비동기 블럭(함수)의 실행만 중단되면, 다른 비동기 블럭(함수)를 실행할 수 있겠지요.
+하지만 현재 쓰레드가 중단되면, 쓰레드에서 실행중인 런타임 자체가 중단되는 것이므로 모든 비동기 블럭(함수)의 실행이 중단되는 것입니다.
+그래서 위의 예제를 보면 task_one함수에서 쓰레드 슬립 함수를 사용하면 런타임이 중단되어서 task_two 함수가 실행이 안되게 됩니다.
+모든 비동기 블럭(함수)의 실행을 중단해야되는 특수한 경우를 제외하고 일반적으로 하나의 함수를 잠시 중단시키려는 경우에는 반드시 Tokio에서 제공하는 sleep함수를 사용해야됩니다.
 
+sleep함수이외에도 tokio에서 제공하는 tokio::fs 등의 크레이트들이 있습니다.
+어떤 차이인지 아시겠지요?
+표준 크레이트에 있는 파일 입출력은 파일을 처리를 하던 중간에 잠들 수가 있습니다.
+그러면 쓰레드 전체가 잠들어서 런타임의 실행도 중단됩니다.
+비동기적으로 실행되는 코드를 만들기 위해서는 외부 크레이트들도 비동기적으로 실행되는 크레이트를 사용해야합니다.
+만약 비동기적으로 실행되는 크레이트가 아닌데 꼭 사용해야한다면 별도의 비동기 태스크를 만드는 등 비동기로 실행될 수 있도록 해주어야합니다.
 
+상황에 따라 다르겠지만 예를 들면 다음과 같이 2개의 비동기 태스크를 실행할 수 있습니다.
+하나의 비동기 태스크에는 동기 크레이트 thread::sleep을 사용하는 함수들을 실행하고, 다른 비동기 태스크에는 비동기 함수들만 실행하고 있습니다.
 
-```rust
-use std::thread;
+```
 use std::time::Duration;
-use std::time::Instant;
-use tokio::time::sleep;
 
-async fn prep_coffee_mug() {
-    sleep(Duration::from_millis(100)).await;
-    println!("Pouring milk..");
-    thread::sleep(Duration::from_secs(3));
-    println!("Milk poured");
-    println!("Putting instant coffee..");
-    thread::sleep(Duration::from_secs(3));
-    println!("Instant coffee put");
+async fn task_one_async_sleep() -> i32 {
+    println!("Start async-task-one");
+    tokio::time::sleep(Duration::from_secs(5)).await;
+    println!("Finish async-task-one");
+    1
 }
 
-async fn make_coffee() {
-    println!("Boiling kettle..");
-    tokio::time::sleep(Duration::from_secs(10)).await;
-    println!("kettle boiled");
-    println!("pouring boiled water..");
-    thread::sleep(Duration::from_secs(3));
-    println!("boiled water poured");
+async fn task_two_async_sleep() -> i32 {
+    println!("Start async-task-two");
+    tokio::time::sleep(Duration::from_secs(5)).await;
+    println!("Finish async-task-two");
+    2
 }
 
-async fn make_toast() {
-    println!("putting bread in toaster..");
-    tokio::time::sleep(Duration::from_secs(10)).await;
-    println!("bread toasted");
-    println!("Buttering toasted bread");
-    thread::sleep(Duration::from_secs(5));
-    println!("toasted bread buttered");
+async fn task_one_thread_sleep() -> i32 {
+    println!("Start thread-task-one");
+    std::thread::sleep(Duration::from_secs(5));
+    println!("Finish thread-task-one");
+    1
+}
+
+async fn task_two_thread_sleep() -> i32 {
+    println!("Start thread-task-two");
+    std::thread::sleep(Duration::from_secs(5));
+    println!("Finish thread-task-two");
+    2
 }
 
 #[tokio::main]
 async fn main() {
-    let start_time = Instant::now();
+    let start_time = std::time::Instant::now();
 
-    // 1. run one async function
-    prep_coffee_mug().await;
-
-    // 2. run some async functions
-    let _ = tokio::task::spawn(async {
-        let coffee_mug_step = prep_coffee_mug();
-        let coffee_step = make_coffee();
-        let toast_step = make_toast();
-        tokio::join!(coffee_mug_step, coffee_step, toast_step);
-    })
-    .await;
-
-    // 3. run two async block concurrently
-    let person_one = tokio::task::spawn(async {
-        let coffee_mug_step = prep_coffee_mug();
-        let coffee_step = make_coffee();
-        let toast_step = make_toast();
-        tokio::join!(coffee_mug_step, coffee_step, toast_step);
+    let one = tokio::task::spawn(async {
+        let future_one = task_one_thread_sleep();
+        let future_two = task_two_thread_sleep();
+        let (_v1, _v2) = tokio::join!(future_one, future_two);
     });
-
-    let person_two = tokio::task::spawn(async {
-        let coffee_mug_step = prep_coffee_mug();
-        let coffee_step = make_coffee();
-        let toast_step = make_toast();
-        tokio::join!(coffee_mug_step, coffee_step, toast_step);
+    let two = tokio::task::spawn(async {
+        let future_one = task_one_async_sleep();
+        let future_two = task_two_async_sleep();
+        let (_v1, _v2) = tokio::join!(future_one, future_two);
     });
+    let _ = tokio::join!(one, two);
 
-    let _ = tokio::join!(person_one, person_two);
-
-    // etc
-    let elapsed_time = start_time.elapsed();
-    println!("It took: {} seconds", elapsed_time.as_secs());
+    let elapsed = start_time.elapsed();
+    println!("Sleep: {} seconds", elapsed.as_secs());
 }
 
 ```
+```bash
+ % cargo run
+   Compiling bin-example v0.1.0 (/Users/user/study/bin-example)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.54s
+     Running `target/debug/bin-example`
+Start thread-task-one
+Start async-task-one
+Start async-task-two
+Finish async-task-two
+Finish async-task-one
+Finish thread-task-one
+Start thread-task-two
+Finish thread-task-two
+Sleep: 10 seconds
+```
 
+실행 결과를 보면 thread_task_one 함수가 실행된 후 해당 비동기 태스크는 잠듭니다.
+하지만 별도의 비동기 태스크는 실행되고 있기 때문에 async_task_one, async_task_two 함수가 모두 실행되는 것을 볼 수 있습니다.
+그래서 총 10초의 시간에 모든 태스크가 실행될 수 있습니다.
+
+## async 테스트
+
+========================================================================================================================================================================================================================================================================================================================
+========================================================================================================
+========================================================================================================
+========================================================================================================
 
 async test
 ```rust
