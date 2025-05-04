@@ -141,14 +141,14 @@ await은 비동기 함수의 실행을 시작하는 것뿐 아니라 함수가 �
 1. `#[tokio::main]`: 이 매크로 속성은 tokio 크레이트에게 main함수에서 tokio가 비동기 태스크들을 실행할 수 있는 런타임을 실행할 것을 알려줍니다. main함수가 아닌 일반 함수가 런타임을 실행한다면 일반 함수에도 사용할 수 있는 속성입니다.
 2. `async fn main`: 비동기 함수를 실행하는 함수도 비동기 함수가 되어야합니다. 즉 await 키워드를 사용해서 비동기 함수를 실행시키는 함수는 자기 자신도 async 함수가 되어야합니다.
 
-예를 들어 단지 다음 함수는 비동기 함수가 될 필요가 없습니다.
+예를 들어 다음 func_not_async 함수는 비동기 함수가 될 필요가 없습니다.
 await 키워드로 비동기 함수를 실행시키지 않았기 때문입니다.
 ```rust
 fn func_not_async() {
     let future_one = task_one();
 }
 ```
-하지만 다음 함수는 비동기 함수가 되어야합니다.
+하지만 다음과 같이 await 키워드를 사용하는 함수 func_async는 비동기 함수가 되어야합니다.
 ```rust
 async fn func_async() {
     task_one().await;
@@ -157,12 +157,11 @@ async fn func_async() {
 
 ## async 함수들을 async 하게 실행시키기
 
-========================================================================================================================
+우리는 이전 예제에서 각 비동기 함수를 순서대로 동기 함수인 것 같이 호출해보았습니다.
+이번에는 비동기 함수들을 정말 비동기 방식으로 호출하는 예제를 만들어보겠습니다.
 
 ```rust
-use std::thread;
 use std::time::Duration;
-use tokio::time::sleep;
 
 async fn task_one() -> i32 {
     println!("Start task-one");
@@ -180,46 +179,111 @@ async fn task_two() -> i32 {
 
 #[tokio::main]
 async fn main() {
-    // 1. run each async task
-    let v1 = task_one().await;
-    let v2 = task_two().await;
+    let future_one = task_one();
+    let future_two = task_two();
+    println!("Futures are ready but not start yet");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    let (v1, v2) = tokio::join!(future_one, future_two);
     println!("v1={} v2={}", v1, v2);
-
-    // 2. Run two async task concurrently
-    let one = task_one();
-    let two = task_two();
-    tokio::join!(one, two);
-    // How to get the return values?
 }
-
+```
+```bash
+ % cargo run
+   Compiling bin-example v0.1.0 (/Users/user/study/bin-example)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.32s
+     Running `target/debug/bin-example`
+Futures are ready but not start yet
+Start task-one
+Start task-two
+Finish task-two
+Finish task-one
+v1=1 v2=2
 ```
 
+예제를 보면 이전에는 join이라는 매크로를 사용하고 있습니다.
+join은 여러개의 future 혹인 비동기 블럭을 입력을 받아서 하나의 비동기 태스크로 실행하는 것입니다.
 
-std::thread::sleep을 사용하는 경우와 tokio::time::sleep를 사용하는 것의 차이
+참고로 비동기 태스크와 비동기 블럭이 헷갈릴 수도 있습니다만 비동기 태스크를 하나의 운영체제로 생각하고, 비동기 블럭(함수)를 하나의 프로세스라고 생각할 수 있습니다.
+비동기 태스크에 속한 여러개의 비동기 블럭(함수)들이 스케줄링 되면서 실행됩니다.
+위 예제는 프로그램에 하나의 비동기 태스크만 실행되고, 2개의 비동기 함수가 하나의 태스크 안에서 실행되는 것입니다.
+당연히 필요에 따라 여러개의 비동기 태스크가 실행될 수 있겠지요.
+하지만 서로 다른 비동기 태스크에서 실행되는 비동기 함수는 서로 스케줄링 되는 기준이 달라지는 것입니다.
+
+비동기 함수들이 비동기적으로 실행되는 것을 좀 더 잘 이해하기 위해 한가지 실험을 더 해보겠습니다.
+사실 비동기 함수에서 std::thread::sleep이 아니라 tokio::time::sleep를 사용하고 있다는 것을 눈치채셨나요?
+둘 다 1초를 기다리는 함수인데 어떤 차이가 있을까요?
+
+아래 예제는 대기 시간을 좀 더 잘 확인하기 위해 5초로 바꾸고, std::thread::sleep이 아니라 tokio::time::sleep를 비교해본 예제입니다.
+
 ```rust
-async fn do_sleep(i: i32) {
-    let secs = std::time::Duration::from_secs(5);
-    println!("{} do_sleep: sleep", i);
-    //std::thread::sleep(secs);
-    tokio::time::sleep(secs).await;
-    println!("{} do_sleep: end", i);
+use std::time::Duration;
+
+async fn task_one_async_sleep() -> i32 {
+    println!("Start task-one");
+    tokio::time::sleep(Duration::from_secs(5)).await;
+    println!("Finish task-one");
+    1
+}
+
+async fn task_two_async_sleep() -> i32 {
+    println!("Start task-two");
+    tokio::time::sleep(Duration::from_secs(5)).await;
+    println!("Finish task-two");
+    2
+}
+
+async fn task_one_thread_sleep() -> i32 {
+    println!("Start task-one");
+    std::thread::sleep(Duration::from_secs(5));
+    println!("Finish task-one");
+    1
+}
+
+async fn task_two_thread_sleep() -> i32 {
+    println!("Start task-two");
+    std::thread::sleep(Duration::from_secs(5));
+    println!("Finish task-two");
+    2
 }
 
 #[tokio::main]
 async fn main() {
-    let mut v = Vec::new();
+    let start_time = std::time::Instant::now();
+    let future_one = task_one_thread_sleep();
+    let future_two = task_two_thread_sleep();
+    let (_v1, _v2) = tokio::join!(future_one, future_two);
+    let elapsed = start_time.elapsed();
+    println!("Thread-sleep: {} seconds", elapsed.as_secs());
 
-    for i in 0..64 {
-        let t = tokio::spawn(do_sleep(i));
-        v.push(t);
-    }
-
-    println!("join");
-    for h in v {
-        _ = h.await;
-    }
+    let start_time = std::time::Instant::now();
+    let future_one = task_one_async_sleep();
+    let future_two = task_two_async_sleep();
+    let (_v1, _v2) = tokio::join!(future_one, future_two);
+    let elapsed = start_time.elapsed();
+    println!("Async-sleep: {} seconds", elapsed.as_secs());
 }
 ```
+```bash
+$ cargo run
+   Compiling bin-example v0.1.0 (/Users/user/study/bin-example)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.36s
+     Running `target/debug/bin-example`
+Start task-one
+Finish task-one
+Start task-two
+Finish task-two
+Thread-sleep: 10 seconds
+Start task-one
+Start task-two
+Finish task-two
+Finish task-one
+Async-sleep: 5 seconds
+```
+
+
+========================================================================================================================
+
+
 
 ```rust
 use std::thread;
