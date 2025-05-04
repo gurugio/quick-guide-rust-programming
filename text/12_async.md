@@ -379,47 +379,61 @@ Sleep: 10 seconds
 
 ## async 테스트
 
-========================================================================================================================================================================================================================================================================================================================
-========================================================================================================
-========================================================================================================
-========================================================================================================
+비동기 함수들을 만들었으면 만든 함수들을 테스트해봐야됩니다.
+기존 테스트 프레임워크는 비동기 런타임이 아니므로 비동기 함수들을 호출 할 수 없습니다.
+그래서 Tokio는 비동기 테스트 프레임워크도 지원하고 있습니다.
 
-async test
 ```rust
+use std::time::Duration;
+
+async fn task_one() -> i32 {
+    println!("Start task-one");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    println!("Finish task-one");
+    1
+}
+
+async fn task_two() -> i32 {
+    println!("Start task-two");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    println!("Finish task-two");
+    2
+}
+
+#[tokio::main]
+async fn main() {
+    let future_one = task_one();
+    let future_two = task_two();
+    println!("Futures are ready but not start yet");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    let (v1, v2) = tokio::join!(future_one, future_two);
+    println!("v1={} v2={}", v1, v2);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_post() {
-        let post_uri = "/post-data";
-        let post_path = &post_uri[1..];
-        let req = Request::builder()
-            .header("host", "localhost:8080")
-            .method("POST")
-            .uri(post_uri)
-            .body(hyper::Body::from("hello"))
-            .unwrap();
-        let mut response = Response::new(Body::empty());
+    async fn test_async_func() {
+        let v = task_one().await;
+        assert_eq!(v, 1);
+    }
 
-        response_post(req, &mut response).await.unwrap();
-        assert_eq!(response.status(), StatusCode::ACCEPTED);
-
-        let mut fs = File::open(post_path).unwrap();
-        let mut contents = String::new();
-
-        fs.read_to_string(&mut contents).unwrap();
-        assert_eq!(contents, "hello");
-
-        // cleanup!!
-        let _ = fs::remove_file(post_path);
+    #[tokio::test]
+    async fn test_async_task() {
+        let future_one = task_one();
+        let future_two = task_two();
+        let (v1, v2) = tokio::join!(future_one, future_two);
+        assert_eq!(v1, 1);
+        assert_eq!(v2, 2);
     }
 }
 ```
 
 
 
-## 예제
+## HTTP 서버 예제
 
 ```rust
 use anyhow::Result;
@@ -652,115 +666,3 @@ mod tests {
 }
 ```
 
-
-```rust
-use anyhow::{Context, Result};
-use boolinator::Boolinator;
-use futures::stream::StreamExt;
-use futures::{future, Stream};
-use inotify::{Event, EventMask, Inotify, WatchMask};
-use std::path::PathBuf;
-use tokio::runtime;
-
-fn print_type_of<T>(_: &T) {
-    println!("{}", std::any::type_name::<T>())
-}
-
-fn main() {
-    // get a future instance because it is "async fn".
-    let iwatcher = newwatcher();
-    print_type_of(&iwatcher); // check the exact type name
-
-    // create a runtime of tokio
-    // that runs the async function.
-    let rt = runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .unwrap();
-
-    // This does not finish but loop on iwatcher
-    let _ = rt.block_on(iwatcher);
-}
-
-async fn newwatcher() -> Result<()> {
-    // just an internal buffer for Inotify stream
-    let buf: Vec<u8> = vec![0; 64];
-    // PathBuf instance for the current directory
-    let path: PathBuf = std::env::current_dir()?.into();
-    // Box::pin is mandatory for .next() method
-    // because .next() requires unpin.
-    let new_files = Box::pin(InotifyTxtStream::new(buf, path.to_owned()).unwrap());
-
-    // add inotify for existing txt files
-    let existing_files = FsTxtStream::new(path.to_owned()).unwrap();
-    let mut txt_files = existing_files.chain(new_files);
-    while let Some(name) = txt_files.next().await {
-        println!("{:?}", name);
-    }
-    Ok(())
-}
-
-struct InotifyTxtStream {}
-
-impl InotifyTxtStream {
-    async fn txt_path((ev, dir_path): (Event<std::ffi::OsString>, PathBuf)) -> Option<PathBuf> {
-        match ev.mask {
-            EventMask::CREATE => {
-                let path = dir_path.join(ev.name?);
-                let is_txt = path.extension()? == "txt";
-                is_txt.as_some(path)
-            }
-            _ => None,
-        }
-    }
-    /// return an inotify instance streaming target path
-    pub fn new(buffer: Vec<u8>, target_path: PathBuf) -> Result<impl Stream<Item = PathBuf>> {
-        // make a inotify instance watching create event
-        let mut inotify = Inotify::init()?;
-        inotify
-            .add_watch(&target_path, WatchMask::CREATE)
-            .with_context(|| {
-                format!(
-                    "Failed to open target directory {}\n",
-                    target_path.display()
-                )
-            })?;
-
-        // event-stream: multi-event
-        // take_while: take event only ready -> why?
-        // map: create a pair (event, path)
-        // filter_map: filtering only path has txt extension
-        let inotify_stream = inotify
-            .event_stream(buffer)?
-            .take_while(|ev| future::ready(ev.is_ok()))
-            .map(move |ev| (ev.unwrap(), target_path.clone()))
-            .filter_map(InotifyTxtStream::txt_path);
-
-        // return a stream that return PathBuf including txt
-        Ok(inotify_stream)
-    }
-}
-
-struct FsTxtStream {}
-
-impl FsTxtStream {
-    fn txt_path(dir_entry: std::fs::DirEntry) -> Option<PathBuf> {
-        let file_type = dir_entry.file_type().ok()?;
-        let is_txt =
-            file_type.is_file() && !file_type.is_dir() && dir_entry.path().extension()? == "txt";
-        is_txt.as_some(dir_entry.path())
-    }
-
-    pub fn new(target_path: PathBuf) -> Result<impl Stream<Item = PathBuf>> {
-        // futures::stream::iter: convert iterator to stream
-        // read_dir: iterator to read target path
-        let fs_txt_stream = futures::stream::iter(
-            std::fs::read_dir(target_path)?
-                .flatten()
-                .filter_map(FsTxtStream::txt_path),
-        );
-        // return a stream that return PathBuf including txt
-        Ok(fs_txt_stream)
-    }
-}
-```
