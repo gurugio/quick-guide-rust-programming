@@ -441,6 +441,24 @@ main함수에서 비동기 함수들을 호출하는 것과 전혀 다를게 없
 
 ## HTTP 서버 예제
 
+Cargo.toml
+```
+[package]
+name = "http-server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.56"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+hyper = { version = "0.14", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+http = "0.2"
+```
+
 ```rust
 use anyhow::Result;
 use http::{Request, Response};
