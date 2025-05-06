@@ -1,4 +1,4 @@
-# Asynchronous programming 기본 소개
+# Asynchronous programming 기본 개념 소개
 
 ## Asynchronous programming이 무엇인가?
 
