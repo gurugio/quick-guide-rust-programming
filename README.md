@@ -21,7 +21,7 @@
   * [설정 파일](text/09_tiny_project/09_05_conf_file.md)
 * [개발팁](text/10_etc.md) - 작성중
 * [쓰레드](text/11_thread.md)
-* 비동기프로그래밍 - 작성중
+* [비동기 프로그래밍의 기본 개념](text/12_async.md)
 
 
 
