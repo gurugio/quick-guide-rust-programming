@@ -222,6 +222,169 @@ fn print_info(item: &dyn Printable<Age = u32>) {
 
 위와같이 트레이트를 구현하는 객체마다 vtable을 추가해서 트레이트 함수들의 포인터를 저장합니다. 이렇게 추가적인 테이블을 만들어서 함수 포인터를 저정하고, 요청받은 함수를 호출하는 방식을 Dynamic dispatch라고 부릅니다만 용어보다는 공통된 특성 혹은 함수들의 구현을 위해 추가적인 데이터가 들어간다는 것을 알고있는게 중요할 것입니다. 물론 메모리를 한번 더 읽게되는 단점도 있습니다만 특별하게 CPU를 많이 사용하는 연산을 수행하는 부분에서 호출되지 않는한 성능에 차이가 나지 않습니다.
 
+### 트레이트 객체의 다운캐스트
+
+객체지향 설계에 익숙하신 분들은 트레이트 객체의 의미나 용도에 대해서 이미 알고 계시겠지만, 저처럼 로우레벨 프로그래밍만 해보 사람에게는 트레이트 객체가 무슨 의미가 있는 것인가 낯설기만 할 수 있습니다.
+그래서 트레이트 객체의 여러 용도중에 다운캐스트에 대해서만 짧게 이야기해보겠습니다.
+우선 다음 예제를 보겠습니다.
+
+```rust
+use std::any::Any;
+
+trait Printable {
+    type Age;
+    fn print(&self);
+    fn get_age(&self) -> Self::Age;
+    fn as_any(&self) -> &dyn Any;
+}
+
+struct Person {
+    name: String,
+    age: u32,
+}
+
+impl Person {
+    fn new(name: &str, age: u32) -> Self {
+        Person {
+            name: name.to_string(),
+            age: age,
+        }
+    }
+}
+
+impl Printable for Person {
+    type Age = u32;
+    fn print(&self) {
+        println!("Name: {}, {} years old", self.name, self.get_age());
+    }
+    fn get_age(&self) -> Self::Age {
+        self.age
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+struct Book {
+    title: String,
+    author: String,
+    published: u32,
+}
+
+impl Printable for Book {
+    type Age = u32;
+    fn print(&self) {
+        println!(
+            "Title: {}\nAuthor: {}\nPublished: {}",
+            self.title,
+            self.author,
+            self.get_age()
+        );
+    }
+    fn get_age(&self) -> Self::Age {
+        self.published
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+struct Collection<'a> {
+    name: String,
+    col: Vec<Box<&'a dyn Printable<Age = u32>>>
+}
+
+impl<'a> Collection<'a> {
+    fn show(&self) {
+        println!("Show the list of {} collection", self.name);
+        for each_col in self.col.iter() {
+        match each_col.as_any().downcast_ref::<Person>() {
+            Some(p) => println!("Found person:{}", p.name),
+            None => (),
+        };
+        match each_col.as_any().downcast_ref::<Book>() {
+            Some(b) => println!("Found book:{}", b.title),
+            None => (),
+        };
+    }
+        
+    }
+}
+
+fn main() {
+    let person = Person::new("Alice", 22);
+    let book = Book {
+        title: String::from("The Rust Programming Language"),
+        author: String::from("Steve Klabnik and Carol Nichols"),
+        published: 20230228,
+    };
+
+    let col: Collection = Collection {name: "my".to_owned(), col: vec![Box::new(&person), Box::new(&book)]};
+    col.show();
+}
+```
+```bash
+% cargo run
+   Compiling bin-example v0.1.0 (/Users/user/study/bin-example)
+warning: methods `print` and `get_age` are never used
+ --> src/main.rs:5:8
+  |
+3 | trait Printable {
+  |       --------- methods in this trait
+4 |     type Age;
+5 |     fn print(&self);
+  |        ^^^^^
+6 |     fn get_age(&self) -> Self::Age;
+  |        ^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` on by default
+
+warning: field `age` is never read
+  --> src/main.rs:12:5
+   |
+10 | struct Person {
+   |        ------ field in this struct
+11 |     name: String,
+12 |     age: u32,
+   |     ^^^
+
+warning: fields `author` and `published` are never read
+  --> src/main.rs:40:5
+   |
+38 | struct Book {
+   |        ---- fields in this struct
+39 |     title: String,
+40 |     author: String,
+   |     ^^^^^^
+41 |     published: u32,
+   |     ^^^^^^^^^
+
+warning: `bin-example` (bin "bin-example") generated 3 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.31s
+     Running `target/debug/bin-example`
+Show the list of my collection
+Found person:Alice
+Found book:The Rust Programming Language
+```
+
+일단 Collection이라는 구조체의 col이라는 필드를 보면 트레이트 객체를 가르키는 Box 포인터의 배열입니다.
+Box포인터는 일단 다음 장에 설명하겠습니다만 현재는 포인터를 저장한다고만 생각하면 되겠습니다.
+그래서 Collection이라는 구조체는 결국 Person과 Book 객체들의 포인터를 저장하는 데이터 타입입니다.
+그리고 show라는 메소드를 보면 col이라는 벡터에 저장된 포인터를 하나씩 읽어가면서, 이 트레이트 객체가 Person의 트레이트 객체인지, Book의 트레이트 객체인지를 확인합니다.
+다운캐스트(다운캐스팅이라고도 부릅니다)가 뭔지는 몰라도 트레이트 객체처럼 공통된 특성에서 세부적인 타입으로 바꿔주는 것을 다운캐스트라고 부른다는 것을 알 수 있습니다.
+정확히 말하면 다운캐스팅은 상위 클래스(클래스 상속 관계에서 부모 클래스)의 포인터에서 하위 클래스(클래스 상속 관계에서 자식 클래스)의 포인터를 얻어내는 것입니다.
+Rust는 객체지향 언어가 아니기때문에 트레이트를 구현하는 것이 상속하는 것은 아닙니다만 이것도 일종의 상위 클래스로 생각해서, 트래이트 객체의 포인터를 트레이트를 구현하는 하위 구조체 타입의 포인터로 바꾸는 것을 다운캐스팅으로 생각하는 것입니다.
+
+참고로 객체 포인터를 가지고 트레이트 객체로 만드는 것은 다운케스팅의 반대인 업캐스팅입니다.
+소프트웨어에서는 보통 더 많이 추상화된 계층을 윗 계층이라고 생각하니까, 트레이트 객체로 변환되는 것을 업캐스팅, 세부 타입으로 변환되는 것을 다운캐스팅으로 생각할 수 있습니다.
+
+요약하자면 이렇게 같은 타입이 들어가야되는 벡터에 서로 다른 타입의 포인터를 저장할 수 있도록 하는 것이 바로 트레이트 객체입니다.
+소프트웨어 설계에서 가장 중요한 추상화를 위해 반드시 필요한 것입니다.
+상위 레이어가 있고, 여러가지 서로 다른 타입을 가지는 하위 레이어가 있을 때, 상위 레이어가 하위 레이어의 모든 타입을 전부 하드코딩해서 관리하려고 한다면 하위 레이어가 추가될 때마다 상위 레이어의 코드로 수정해야됩니다.
+트레이트 객체로 하위 레이어를 관리한다면, 각 하위 레이어가 공통 인터페이스(트레이트)를 구현하고, 상위 레이어틑 트레이트의 메소드를 사용하거나, 특별한 경우에는 다운캐스팅을 해서 특정 타입의 고유한 메소드를 사용하게된다면, 각 레이어가 더 잘 구분될 수 있을 것입니다.
+
 ## 표준 라이브러리에 포함된 트레이트
 
 개발자들이 직접 필요한 트레이트를 만들 수 있지만, 러스트의 표준 라이브러리(The Rust Standard Library: <https://doc.rust-lang.org/std/index.html>)에서 미리 만들놓은 편리한 트레이트들이 있습니다. 표준 라이브러리라고 부르는 만큼 어떤 상황에서도 사용할 수 있을만큼 성능이나 범용적이 좋은 트레이트들입니다. 그중에서 초보 단계에서도 자주 사용하게되는 몇가지만 예제를 만들어보겠습니다.
